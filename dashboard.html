@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#123f38">
+  <title>لوحة المتابعة | جيو الرافدين</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="dashboard.css">
+</head>
+<body class="dashboard-page">
+  <aside class="dashboard-sidebar" aria-label="القائمة الجانبية">
+    <a class="brand" href="index.html">
+      <span class="brand-mark" aria-hidden="true"><img src="assets/iraq-mark.svg" alt=""></span>
+      <span><strong>جيو الرافدين</strong><small>GeoRafidain</small></span>
+    </a>
+    <nav>
+      <a class="active" href="#requests"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 4h12v16H6zM9 8h6M9 12h6M9 16h4"/></svg></span> الطلبات</a>
+      <a id="security-link" href="security.html" hidden><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m12 3 7 3v5c0 4.5-2.8 8-7 10-4.2-2-7-5.5-7-10V6l7-3Z"/><path d="m9 12 2 2 4-5"/></svg></span> أمان المدير</a>
+      <a href="index.html#data-library"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><ellipse cx="12" cy="6" rx="7" ry="3"/><path d="M5 6v6c0 1.7 3.1 3 7 3s7-1.3 7-3V6M5 12v6c0 1.7 3.1 3 7 3s7-1.3 7-3v-6"/></svg></span> مكتبة البيانات</a>
+      <a href="index.html#services"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m12 3 8 4-8 4-8-4 8-4Z"/><path d="m4 12 8 4 8-4M4 17l8 4 8-4"/></svg></span> الخدمات</a>
+      <a href="index.html"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M14 5h5v5M19 5l-8 8"/><path d="M18 13v6H5V6h6"/></svg></span> عرض الموقع</a>
+    </nav>
+    <div class="sidebar-note"><strong>وصول محمي</strong><p>تُعرض الطلبات وفق حساب المستخدم وسياسات قاعدة البيانات.</p></div>
+  </aside>
+
+  <section class="dashboard-gate" id="dashboard-gate">
+    <div><span>🔒</span><h1 id="gate-title">جارٍ التحقق من الحساب</h1><p id="gate-message">لحظة واحدة...</p><a class="button button-small" id="gate-link" href="index.html">العودة إلى المنصة</a></div>
+  </section>
+
+  <main class="dashboard-main" id="requests" hidden>
+    <header class="dashboard-header">
+      <div><p id="welcome-text">مرحباً،</p><h1 id="dashboard-title">متابعة الطلبات</h1></div>
+      <div class="dashboard-actions"><span class="account-email" id="account-email"></span><button id="dashboard-sign-out" type="button">تسجيل الخروج</button><button id="refresh-button" type="button">تحديث الطلبات</button><button id="export-csv-button" type="button">تصدير CSV</button><button id="export-button" type="button">نسخة JSON</button><a class="button button-small" href="index.html#request">+ طلب جديد</a></div>
+    </header>
+
+    <p class="dashboard-notice" id="dashboard-notice" role="status" aria-live="polite" hidden></p>
+
+    <section class="metric-grid" aria-label="ملخص الطلبات">
+      <article><span class="metric-icon green" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 4h12v16H6zM9 8h6M9 12h6M9 16h4"/></svg></span><div><small>إجمالي الطلبات</small><strong id="total-count">0</strong></div></article>
+      <article><span class="metric-icon gold" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 8v8M8 12h8"/></svg></span><div><small>طلبات جديدة</small><strong id="new-count">0</strong></div></article>
+      <article><span class="metric-icon blue" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 17h4l3-10 3 10h6M5 12h14"/></svg></span><div><small>قيد التنفيذ</small><strong id="active-count">0</strong></div></article>
+      <article><span class="metric-icon rust" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="m8 12 3 3 5-6"/></svg></span><div><small>مكتملة</small><strong id="done-count">0</strong></div></article>
+    </section>
+
+    <section class="request-panel">
+      <div class="panel-header">
+        <div><h2>قائمة الطلبات</h2><p>راجع التفاصيل وحدّث حالة كل مشروع.</p><small class="last-refresh" id="last-refresh"></small></div>
+        <div class="panel-tools">
+          <label class="search-field"><span>⌕</span><input id="request-search" type="search" placeholder="بحث بالاسم أو الخدمة..."></label>
+          <select id="status-filter" aria-label="تصفية حسب الحالة"><option value="all">جميع الحالات</option><option value="new">جديد</option><option value="reviewing">قيد المراجعة</option><option value="in_progress">قيد التنفيذ</option><option value="completed">مكتمل</option></select>
+        </div>
+      </div>
+
+      <div class="request-table-wrap">
+        <table class="request-table">
+          <thead><tr><th>رقم الطلب</th><th>العميل والخدمة</th><th>منطقة الدراسة</th><th>التقدم</th><th>التاريخ</th><th>الحالة</th><th><span class="sr-only">إجراءات</span></th></tr></thead>
+          <tbody id="request-list"></tbody>
+        </table>
+        <div class="empty-state" id="empty-state">
+          <span>⌁</span><h3>لا توجد طلبات بعد</h3><p>أرسل طلباً من النموذج في الصفحة الرئيسية، وسيظهر هنا بعد حفظه في قاعدة البيانات.</p><a class="button button-small" href="index.html#request">إنشاء أول طلب</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <dialog id="request-dialog" class="request-dialog">
+    <form method="dialog" class="dialog-shell">
+      <div class="dialog-header"><div><small id="dialog-id"></small><h2 id="dialog-title">تفاصيل الطلب</h2></div><button class="dialog-close" value="close" aria-label="إغلاق">×</button></div>
+      <div class="dialog-content" id="dialog-content"></div>
+      <div class="dialog-footer" id="admin-dialog-controls">
+        <div class="admin-workflow-fields">
+          <label>حالة المشروع<select id="dialog-status"><option value="new">جديد</option><option value="reviewing">قيد المراجعة</option><option value="in_progress">قيد التنفيذ</option><option value="completed">مكتمل</option></select></label>
+          <label class="workflow-extra-field">نسبة الإنجاز<input id="dialog-progress" type="number" inputmode="numeric" min="0" max="100" step="1" value="0"><span>%</span></label>
+          <label class="workflow-extra-field">السعر المقترح (د.ع.)<input id="dialog-price" type="number" inputmode="numeric" min="0" max="1000000000" step="1000" placeholder="مثال: 250000"></label>
+          <label class="workflow-extra-field">التسليم المتوقع<input id="dialog-delivery" type="date"></label>
+          <label class="workflow-extra-field full">رسالة للعميل<textarea id="dialog-admin-message" rows="3" maxlength="2000" placeholder="مثال: تم استلام البيانات وبدأت مرحلة المعالجة..."></textarea><small><span id="admin-message-count">0</span>/2000</small></label>
+        </div>
+        <p class="workflow-migration-note" id="workflow-migration-note" hidden>حقول المتابعة المتقدمة تحتاج إلى تطبيق تحديث قاعدة البيانات.</p>
+        <div class="dialog-actions"><button class="delete-button" id="delete-request" type="button">حذف الطلب</button><button class="button button-small" id="save-status" type="button">حفظ التحديث</button></div>
+      </div>
+    </form>
+  </dialog>
+
+  <script src="vendor/supabase-2.108.2.min.js"></script>
+  <script src="backend-config.js"></script>
+  <script src="backend.js"></script>
+  <script src="dashboard.js"></script>
+</body>
+</html>

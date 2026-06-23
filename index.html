@@ -43,11 +43,36 @@
     }
   }
   </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "جيو الرافدين",
+    "alternateName": "Geo Rafidain",
+    "url": "https://mmssuu76-tech.github.io/geo-rafidain/",
+    "logo": "https://mmssuu76-tech.github.io/geo-rafidain/assets/geo-rafidain-pwa-512.png",
+    "email": "mmssuu76@gmail.com",
+    "areaServed": {
+      "@type": "Country",
+      "name": "Iraq"
+    },
+    "founder": {
+      "@type": "Person",
+      "name": "مصطفى صالح حسين"
+    },
+    "contactPoint": {
+      "@type": "ContactPoint",
+      "contactType": "customer support",
+      "email": "mmssuu76@gmail.com",
+      "availableLanguage": ["Arabic"]
+    }
+  }
+  </script>
   <title>جيو الرافدين | خدمات جغرافية برؤية أعمق</title>
   <link rel="icon" href="assets/geo-rafidain.ico" sizes="any">
   <link rel="apple-touch-icon" href="assets/geo-rafidain-icon.png">
   <link rel="manifest" href="manifest.webmanifest">
-  <link rel="stylesheet" href="styles.css?v=20260624-request-success">
+  <link rel="stylesheet" href="styles.css?v=20260624-contact">
 </head>
 <body>
   <a class="skip-link" href="#main">انتقل إلى المحتوى</a>
@@ -73,6 +98,7 @@
         <a href="#data-library">مكتبة البيانات</a>
         <a href="#how-it-works">آلية العمل</a>
         <a href="#about">عن المؤسس</a>
+        <a href="#contact">التواصل</a>
         <button class="nav-auth-button" id="auth-button" type="button">تسجيل الدخول</button>
         <a class="nav-dashboard" href="dashboard.html">لوحة المتابعة</a>
         <a class="button button-small" href="#request">اطلب خدمة</a>
@@ -561,6 +587,51 @@
         </form>
       </div>
     </section>
+
+    <section class="section contact-section" id="contact">
+      <div class="container contact-layout">
+        <div class="contact-copy reveal">
+          <p class="eyebrow dark"><span></span> تواصل منظم وواضح</p>
+          <h2>بعد إرسال الطلب،<br>لا تضيع المتابعة.</h2>
+          <p>صُممت جيو الرافدين حتى تكون قنوات التواصل واضحة من البداية: الطلب يُرسل من النموذج، المتابعة تتم من لوحة طلباتي، والاستفسارات العامة تصل عبر البريد الرسمي.</p>
+          <div class="contact-response">
+            <span>⏱</span>
+            <div>
+              <strong>أوقات الرد المتوقعة</strong>
+              <small>عادةً تتم مراجعة الطلبات الأولية خلال 24–48 ساعة حسب حجم التفاصيل والملفات المرفقة. الطلبات العاجلة تُراجع حسب الإمكانية وترتيب الأولوية.</small>
+            </div>
+          </div>
+        </div>
+
+        <div class="contact-grid reveal" aria-label="قنوات التواصل في جيو الرافدين">
+          <article class="contact-card primary">
+            <span>01</span>
+            <h3>لوحة طلباتي</h3>
+            <p>القناة الأساسية بعد إرسال الطلب؛ من خلالها تظهر الحالة، نسبة الإنجاز، رسالة المتابعة، السعر المقترح، وموعد التسليم.</p>
+            <a href="dashboard.html">فتح لوحة المتابعة <b aria-hidden="true">←</b></a>
+          </article>
+          <article class="contact-card">
+            <span>02</span>
+            <h3>البريد الرسمي</h3>
+            <p>للاستفسارات العامة، التعاون البحثي، أو الأسئلة التي لا ترتبط بطلب محفوظ داخل المنصة.</p>
+            <a href="mailto:mmssuu76@gmail.com">mmssuu76@gmail.com <b aria-hidden="true">←</b></a>
+          </article>
+          <article class="contact-card">
+            <span>03</span>
+            <h3>نموذج الطلب</h3>
+            <p>لأي خدمة تنفيذية: خرائط، تحليلات، بيانات استشعار، أو استشارة بحثية. النموذج يحفظ التفاصيل والملفات بأمان.</p>
+            <a href="#request">إرسال طلب جديد <b aria-hidden="true">←</b></a>
+          </article>
+        </div>
+
+        <div class="contact-flow reveal" aria-label="تسلسل التواصل بعد إرسال الطلب">
+          <article><span>1</span><strong>إرسال الطلب</strong><small>املأ النموذج وارفع الملفات المتوفرة.</small></article>
+          <article><span>2</span><strong>المراجعة الأولية</strong><small>تحديد وضوح البيانات والمنهج المناسب.</small></article>
+          <article><span>3</span><strong>تحديث المتابعة</strong><small>تظهر الحالة والرسائل داخل لوحة طلباتي.</small></article>
+          <article><span>4</span><strong>التسليم والدعم</strong><small>مخرجات واضحة مع إمكانية متابعة الملاحظات.</small></article>
+        </div>
+      </div>
+    </section>
   </main>
 
   <dialog class="auth-dialog" id="auth-dialog" aria-labelledby="auth-title">
@@ -600,7 +671,7 @@
   <footer class="site-footer">
     <div class="container footer-main">
       <a class="brand footer-brand" href="#top"><span class="brand-mark" aria-hidden="true"><img src="assets/iraq-mark.svg" alt=""></span><span><strong>جيو الرافدين</strong><small>بيانات مكانية، رؤية أعمق</small></span></a>
-      <div class="footer-links"><a href="#services">الخدمات</a><a href="#packages">الباقات</a><a href="#portfolio">الأعمال</a><a href="#faq">الأسئلة</a><a href="#data-library">البيانات</a><a href="#about">عن المؤسس</a><a href="dashboard.html">لوحة المتابعة</a><a href="privacy.html">الخصوصية</a><a href="terms.html">شروط الاستخدام</a></div>
+      <div class="footer-links"><a href="#services">الخدمات</a><a href="#packages">الباقات</a><a href="#portfolio">الأعمال</a><a href="#faq">الأسئلة</a><a href="#data-library">البيانات</a><a href="#about">عن المؤسس</a><a href="#contact">التواصل</a><a href="dashboard.html">لوحة المتابعة</a><a href="privacy.html">الخصوصية</a><a href="terms.html">شروط الاستخدام</a></div>
       <a class="footer-cta" href="#request">ابدأ طلباً جديداً <span>←</span></a>
     </div>
     <div class="container footer-bottom"><span>© <span id="year"></span> جيو الرافدين. جميع الحقوق محفوظة.</span><a href="mailto:mmssuu76@gmail.com">mmssuu76@gmail.com</a></div>

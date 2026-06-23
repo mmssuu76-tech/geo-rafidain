@@ -42,6 +42,20 @@
     </section>`);
   }
 
+  const opsGrid = document.querySelector('.ops-grid');
+  if (opsGrid && !document.querySelector('#client-journey')) {
+    opsGrid.insertAdjacentHTML('afterend', `
+    <section class="client-journey" id="client-journey" aria-label="مسار متابعة الطلب" hidden>
+      <div class="journey-copy">
+        <span id="journey-kicker">مسار المتابعة</span>
+        <h2 id="journey-title">متابعة حالة الطلب</h2>
+        <p id="journey-summary">اختر طلباً أو راجع آخر طلب نشط لمعرفة المرحلة الحالية والخطوة القادمة.</p>
+      </div>
+      <div class="journey-track" id="journey-track"></div>
+      <div class="journey-next" id="journey-next"></div>
+    </section>`);
+  }
+
   if (panelTools && !document.querySelector('#service-filter')) {
     panelTools.insertAdjacentHTML('beforeend', `
       <select id="service-filter" aria-label="تصفية حسب نوع الخدمة"><option value="all">جميع الخدمات</option></select>
@@ -63,6 +77,12 @@
   const dueSoonCount = document.querySelector('#due-soon-count');
   const filesCount = document.querySelector('#files-count');
   const filterSummaryText = document.querySelector('#filter-summary');
+  const journeyPanel = document.querySelector('#client-journey');
+  const journeyKicker = document.querySelector('#journey-kicker');
+  const journeyTitle = document.querySelector('#journey-title');
+  const journeySummary = document.querySelector('#journey-summary');
+  const journeyTrack = document.querySelector('#journey-track');
+  const journeyNext = document.querySelector('#journey-next');
 
   const statusLabels = {
     new: 'جديد',
@@ -76,6 +96,36 @@
     reviewing: 'status-review',
     in_progress: 'status-active',
     completed: 'status-done'
+  };
+
+  const journeySteps = [
+    { key: 'new', label: 'تم الاستلام', text: 'وصل الطلب إلى لوحة المتابعة وحُفظ داخل حسابك.' },
+    { key: 'reviewing', label: 'قيد المراجعة', text: 'تجري قراءة الوصف والبيانات لتحديد المنهج المناسب.' },
+    { key: 'in_progress', label: 'قيد التنفيذ', text: 'بدأ العمل على الخرائط أو التحليل أو تجهيز البيانات.' },
+    { key: 'completed', label: 'مكتمل', text: 'اكتمل تنفيذ الطلب ويمكن مراجعة المخرجات النهائية.' }
+  ];
+
+  const journeyCopy = {
+    new: {
+      title: 'تم استلام الطلب وهو بانتظار المراجعة',
+      summary: 'الطلب محفوظ بأمان. الخطوة التالية هي مراجعة الوصف والملفات لتحديد المنهج والمدة المناسبة.',
+      next: 'انتظر تحديث المدير برسالة متابعة أو سعر مقترح أو موعد تسليم عند اكتمال المراجعة الأولية.'
+    },
+    reviewing: {
+      title: 'الطلب قيد المراجعة العلمية والفنية',
+      summary: 'تتم الآن قراءة تفاصيل منطقة الدراسة والبيانات المطلوبة لاختيار الطريقة الأنسب للتنفيذ.',
+      next: 'قد تظهر رسالة متابعة من المدير إذا احتاج الطلب إلى توضيح إضافي أو بيانات مساعدة.'
+    },
+    in_progress: {
+      title: 'بدأ تنفيذ الطلب',
+      summary: 'انتقل الطلب إلى مرحلة العمل الفعلي على التحليل أو الخرائط أو تجهيز البيانات.',
+      next: 'تابع نسبة الإنجاز وموعد التسليم المتوقع من هذه اللوحة حتى اكتمال المشروع.'
+    },
+    completed: {
+      title: 'اكتمل تنفيذ الطلب',
+      summary: 'تم إنهاء الطلب. راجع رسالة المتابعة والملفات أو التعليمات النهائية داخل التفاصيل.',
+      next: 'إذا احتجت تعديلاً أو خدمة مرتبطة، يمكنك إنشاء طلب جديد مع الإشارة إلى رقم هذا الطلب.'
+    }
   };
 
   const safe = value => String(value ?? '').replace(/[&<>'"]/g, character => ({
@@ -120,6 +170,60 @@
   const priceLabel = value => value === null || value === undefined || value === ''
     ? 'لم يحدد بعد'
     : `${new Intl.NumberFormat('ar-IQ').format(Number(value))} د.ع.`;
+
+  const journeyStageIndex = status => {
+    const index = journeySteps.findIndex(step => step.key === status);
+    return index >= 0 ? index : 0;
+  };
+
+  const journeyPercent = item => {
+    const index = journeyStageIndex(item.status);
+    return Math.round((index / (journeySteps.length - 1)) * 82);
+  };
+
+  const journeyStepsMarkup = item => {
+    const activeIndex = journeyStageIndex(item.status);
+    return `
+      <ol class="journey-steps" style="--journey-progress:${journeyPercent(item)}%">
+        ${journeySteps.map((step, index) => {
+          const state = index < activeIndex ? 'done' : (index === activeIndex ? 'active' : 'pending');
+          return `<li class="${state}"><span>${String(index + 1).padStart(2, '0')}</span><div><strong>${safe(step.label)}</strong><small>${safe(step.text)}</small></div></li>`;
+        }).join('')}
+      </ol>`;
+  };
+
+  const updateJourneyPanel = visible => {
+    if (!journeyPanel) return;
+    if (!visible.length) {
+      journeyPanel.hidden = true;
+      return;
+    }
+
+    const item = visible.find(request => request.status !== 'completed') || visible[0];
+    const copy = journeyCopy[item.status] || journeyCopy.new;
+    journeyPanel.hidden = false;
+    journeyKicker.textContent = profile?.role === 'admin' ? 'المسار الزمني للطلب الأبرز' : 'مسار متابعة طلبك';
+    journeyTitle.textContent = copy.title;
+    journeySummary.textContent = copy.summary;
+    journeyTrack.innerHTML = journeyStepsMarkup(item);
+    journeyNext.innerHTML = `
+      <article><small>رقم الطلب</small><strong class="request-id">${safe(item.request_number)}</strong></article>
+      <article><small>الخدمة</small><strong>${safe(item.service)}</strong></article>
+      <article><small>الحالة الحالية</small><strong><span class="status-pill ${statusClasses[item.status] || 'status-new'}">${statusLabels[item.status] || safe(item.status)}</span></strong></article>
+      <article><small>التقدم</small><strong>${progressValue(item.progress_percent)}%</strong></article>
+      <article class="wide"><small>الخطوة القادمة</small><p>${safe(copy.next)}</p></article>
+      <button class="journey-open" type="button" data-id="${safe(item.id)}">فتح تفاصيل الطلب</button>`;
+  };
+
+  const journeyDetailMarkup = item => {
+    const copy = journeyCopy[item.status] || journeyCopy.new;
+    return `
+      <div class="detail-field full journey-detail">
+        <small>مسار المتابعة</small>
+        ${journeyStepsMarkup(item)}
+        <p>${safe(copy.next)}</p>
+      </div>`;
+  };
 
   const fileSize = bytes => {
     if (bytes < 1024) return `${bytes} B`;
@@ -228,6 +332,7 @@
     updateMetrics(requests);
     const visible = getVisibleRequests();
     updateOperationalInsights(visible);
+    updateJourneyPanel(visible);
 
     list.innerHTML = visible.map(item => `
       <tr>
@@ -273,6 +378,7 @@
       <div class="detail-field"><small>وسيلة التواصل</small><strong>${safe(item.contact)}</strong></div>
       <div class="detail-field"><small>منطقة الدراسة</small><strong>${safe(item.study_area || 'غير محددة')}</strong></div>
       <div class="detail-field"><small>الموعد المطلوب</small><strong>${item.deadline ? dateLabel(item.deadline) : 'غير محدد'}</strong></div>
+      ${journeyDetailMarkup(item)}
       ${workflowAvailable ? `
       <div class="detail-field"><small>السعر المقترح</small><strong>${priceLabel(item.quoted_price_iqd)}</strong></div>
       <div class="detail-field"><small>التسليم المتوقع</small><strong>${item.expected_delivery_date ? dateLabel(item.expected_delivery_date) : 'لم يحدد بعد'}</strong></div>
@@ -305,6 +411,11 @@
 
   list.addEventListener('click', event => {
     const button = event.target.closest('.view-button');
+    if (button) showRequest(button.dataset.id);
+  });
+
+  journeyPanel?.addEventListener('click', event => {
+    const button = event.target.closest('.journey-open');
     if (button) showRequest(button.dataset.id);
   });
 

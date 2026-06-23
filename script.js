@@ -113,6 +113,9 @@
       setSelectByText('dataType', 'نموذج ارتفاعات DEM');
       setSelectByText('outputType', 'بيانات مكانية مجهزة للاستخدام');
     }
+    if (/تحليل|التحليلات/i.test(requested)) {
+      setSelectByText('outputType', 'تحليل جغرافي مع نتائج قابلة للتفسير');
+    }
     if (/خريطة|خرائط|رسم/i.test(requested)) {
       setSelectByText('outputType', 'خريطة جاهزة للنشر أو الطباعة');
     }
@@ -125,6 +128,7 @@
   document.querySelectorAll('.service-select').forEach(button => {
     button.addEventListener('click', () => {
       const requested = button.dataset.service;
+      const selectedPackage = button.dataset.package;
       const option = [...serviceSelect.options].find(item => item.text === requested);
       if (option) serviceSelect.value = option.value || option.text;
       else {
@@ -133,6 +137,13 @@
         charCount.textContent = form.elements.description.value.length;
       }
       suggestIntakeDefaults(requested);
+      if (selectedPackage) {
+        const packageNote = `أرغب في اختيار ${selectedPackage}. `;
+        const currentDescription = form.elements.description.value.trim();
+        if (!currentDescription) form.elements.description.value = packageNote;
+        else if (!currentDescription.includes(selectedPackage)) form.elements.description.value = `${packageNote}${currentDescription}`;
+        charCount.textContent = form.elements.description.value.length;
+      }
       document.querySelector('#request').scrollIntoView({ behavior: 'smooth' });
       setTimeout(() => serviceSelect.focus(), 500);
     });

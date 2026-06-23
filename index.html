@@ -21,7 +21,7 @@
   <link rel="icon" href="assets/geo-rafidain.ico" sizes="any">
   <link rel="apple-touch-icon" href="assets/geo-rafidain-icon.png">
   <link rel="manifest" href="manifest.webmanifest">
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles.css?v=20260624">
 </head>
 <body>
   <a class="skip-link" href="#main">انتقل إلى المحتوى</a>
@@ -41,6 +41,7 @@
 
       <nav class="main-nav" id="main-nav" aria-label="التنقل الرئيسي">
         <a href="#services">الخدمات</a>
+        <a href="#packages">الباقات</a>
         <a href="#data-library">مكتبة البيانات</a>
         <a href="#how-it-works">آلية العمل</a>
         <a href="#about">عن المؤسس</a>
@@ -131,6 +132,61 @@
             <p>تحديد المرئيات والمنتجات الأنسب، تجهيزها ومعالجتها وتوثيق المصدر والدقة والفترة الزمنية.</p>
             <button class="card-link service-select" type="button" data-service="توفير بيانات الاستشعار عن بُعد">اطلب هذه الخدمة <span>←</span></button>
           </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section packages-section" id="packages">
+      <div class="container">
+        <div class="section-heading reveal">
+          <div><p class="eyebrow dark"><span></span> باقات تقديرية مرنة</p><h2>اختر مستوى الخدمة<br>ثم نضبط التفاصيل حسب بحثك.</h2></div>
+          <p>هذه أسعار إرشادية أولية تساعدك على تقدير حجم العمل. السعر النهائي يحدد بعد مراجعة منطقة الدراسة، نوع البيانات، عدد الخرائط أو التحليلات، وحجم الملفات المطلوبة.</p>
+        </div>
+
+        <div class="pricing-grid">
+          <article class="pricing-card reveal">
+            <span class="package-badge">للطلبة والبحوث السريعة</span>
+            <h3>باقة الخريطة البحثية</h3>
+            <p class="price-tag">تبدأ من <strong>25,000</strong> د.ع</p>
+            <p>مناسبة لخريطة واحدة أو إخراج كارتوغرافي واضح لمنطقة دراسة محددة.</p>
+            <ul class="package-list">
+              <li>تنسيق خريطة جاهزة للبحث أو الطباعة.</li>
+              <li>إضافة عنوان ومفتاح ومقياس واتجاه الشمال.</li>
+              <li>تسليم PDF أو PNG عالي الدقة.</li>
+            </ul>
+            <button class="package-action service-select" type="button" data-service="رسم الخرائط" data-package="باقة الخريطة البحثية">اختيار هذه الباقة <span>←</span></button>
+          </article>
+
+          <article class="pricing-card featured reveal">
+            <span class="package-badge">الأكثر ملاءمة للرسائل والأطاريح</span>
+            <h3>باقة التحليل المكاني</h3>
+            <p class="price-tag">تبدأ من <strong>75,000</strong> د.ع</p>
+            <p>مناسبة للتحليلات الجغرافية أو البيئية التي تحتاج تفسيرًا ونتائج قابلة للاستخدام البحثي.</p>
+            <ul class="package-list">
+              <li>تحليل مكاني أو زمني حسب سؤال البحث.</li>
+              <li>مخرجات خرائط وجداول مختصرة.</li>
+              <li>شرح موجز للمنهجية والنتائج.</li>
+            </ul>
+            <button class="package-action service-select" type="button" data-service="التحليلات الجغرافية" data-package="باقة التحليل المكاني">اختيار هذه الباقة <span>←</span></button>
+          </article>
+
+          <article class="pricing-card reveal">
+            <span class="package-badge">للمشاريع المتكاملة</span>
+            <h3>باقة البيانات والاستشعار</h3>
+            <p class="price-tag">تبدأ من <strong>150,000</strong> د.ع</p>
+            <p>مناسبة لمن يحتاج تجهيز بيانات، مرئيات فضائية، مؤشرات، أو سلسلة زمنية كاملة.</p>
+            <ul class="package-list">
+              <li>اختيار وتجهيز البيانات المناسبة.</li>
+              <li>معالجة أولية وتوثيق المصدر والفترة.</li>
+              <li>تسليم ملفات مكانية أو تقرير مختصر.</li>
+            </ul>
+            <button class="package-action service-select" type="button" data-service="توفير بيانات الاستشعار عن بُعد" data-package="باقة البيانات والاستشعار">اختيار هذه الباقة <span>←</span></button>
+          </article>
+        </div>
+
+        <div class="pricing-note reveal">
+          <strong>ملاحظة مهنية:</strong>
+          <span>الأسعار تقديرية ولا تشمل أي بيانات تجارية مدفوعة إن وجدت. يمكن تخفيض أو رفع السعر حسب مساحة الدراسة، عدد الخرائط، صعوبة التحليل، ووقت التسليم المطلوب.</span>
         </div>
       </div>
     </section>
@@ -367,17 +423,17 @@
   <footer class="site-footer">
     <div class="container footer-main">
       <a class="brand footer-brand" href="#top"><span class="brand-mark" aria-hidden="true"><img src="assets/iraq-mark.svg" alt=""></span><span><strong>جيو الرافدين</strong><small>بيانات مكانية، رؤية أعمق</small></span></a>
-      <div class="footer-links"><a href="#services">الخدمات</a><a href="#data-library">البيانات</a><a href="#about">عن المؤسس</a><a href="dashboard.html">لوحة المتابعة</a><a href="privacy.html">الخصوصية</a><a href="terms.html">شروط الاستخدام</a></div>
+      <div class="footer-links"><a href="#services">الخدمات</a><a href="#packages">الباقات</a><a href="#data-library">البيانات</a><a href="#about">عن المؤسس</a><a href="dashboard.html">لوحة المتابعة</a><a href="privacy.html">الخصوصية</a><a href="terms.html">شروط الاستخدام</a></div>
       <a class="footer-cta" href="#request">ابدأ طلباً جديداً <span>←</span></a>
     </div>
     <div class="container footer-bottom"><span>© <span id="year"></span> جيو الرافدين. جميع الحقوق محفوظة.</span><a href="mailto:mmssuu76@gmail.com">mmssuu76@gmail.com</a></div>
   </footer>
 
   <script src="vendor/supabase-2.108.2.min.js"></script>
-  <script src="backend-config.js"></script>
-  <script src="backend.js"></script>
-  <script src="study-map.js"></script>
-  <script src="script.js"></script>
-  <script src="pwa.js"></script>
+  <script src="backend-config.js?v=20260624"></script>
+  <script src="backend.js?v=20260624"></script>
+  <script src="study-map.js?v=20260624"></script>
+  <script src="script.js?v=20260624"></script>
+  <script src="pwa.js?v=20260624"></script>
 </body>
 </html>

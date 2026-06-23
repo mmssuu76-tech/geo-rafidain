@@ -1,4 +1,5 @@
-const GEO_RAFIDAIN_CACHE = 'geo-rafidain-static-v1';
+const GEO_RAFIDAIN_CACHE = 'geo-rafidain-static-v2';
+const NETWORK_FIRST_EXTENSIONS = new Set(['.html', '.css', '.js', '.json', '.webmanifest']);
 
 const APP_SHELL = [
   './',
@@ -61,6 +62,24 @@ self.addEventListener('fetch', event => {
           return response;
         })
         .catch(() => caches.match(request).then(response => response || caches.match('./index.html')))
+    );
+    return;
+  }
+
+  const extension = requestUrl.pathname.includes('.')
+    ? `.${requestUrl.pathname.split('.').pop().toLowerCase()}`
+    : '';
+
+  if (NETWORK_FIRST_EXTENSIONS.has(extension)) {
+    event.respondWith(
+      fetch(request)
+        .then(response => {
+          if (!response || response.status !== 200) return response;
+          const copy = response.clone();
+          caches.open(GEO_RAFIDAIN_CACHE).then(cache => cache.put(request, copy));
+          return response;
+        })
+        .catch(() => caches.match(request))
     );
     return;
   }

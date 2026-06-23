@@ -17,11 +17,24 @@
   <meta name="twitter:title" content="جيو الرافدين | خدمات جغرافية برؤية أعمق">
   <meta name="twitter:description" content="خرائط احترافية، تحليلات مكانية، مرئيات فضائية وبيانات موثوقة للباحثين وطلاب الجغرافية في العراق.">
   <meta name="twitter:image" content="https://mmssuu76-tech.github.io/geo-rafidain/assets/geo-rafidain-pwa-512.png">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {"@type":"Question","name":"هل أحتاج إلى تسجيل الدخول لإرسال طلب؟","acceptedAnswer":{"@type":"Answer","text":"نعم. تسجيل الدخول بالبريد يحفظ الطلب داخل حساب المستخدم الخاص، ويمنع ظهور البيانات والملفات لأي شخص غير صاحب الطلب أو حساب مدير المنصة."}},
+      {"@type":"Question","name":"هل البيانات الجغرافية والمرئيات الفضائية مجانية؟","acceptedAnswer":{"@type":"Answer","text":"كثير من المصادر العامة مثل Sentinel وLandsat وSRTM مجانية. رسوم الخدمة تكون مقابل اختيار البيانات وتجهيزها ومعالجتها وتحليلها وتوثيقها للبحث."}},
+      {"@type":"Question","name":"هل يمكن رفع Shapefile أو GeoJSON؟","acceptedAnswer":{"@type":"Answer","text":"نعم. يمكن رفع GeoJSON مباشرة، وللـ Shapefile يفضل ضغط مكوناته في ملف ZIP واحد حتى تصل الملفات كاملة."}},
+      {"@type":"Question","name":"كم تستغرق مدة تنفيذ الطلب؟","acceptedAnswer":{"@type":"Answer","text":"الطلبات البسيطة قد تنجز خلال 1 إلى 3 أيام، أما التحليلات والسلاسل الزمنية والمشاريع الكبيرة فتحتاج مدة أطول حسب حجم البيانات ومنطقة الدراسة."}},
+      {"@type":"Question","name":"هل الأسعار الموجودة في الباقات نهائية؟","acceptedAnswer":{"@type":"Answer","text":"الأسعار تقديرية وتبدأ من المبالغ الموضحة. السعر النهائي يعتمد على عدد الخرائط ونوع التحليل ومساحة الدراسة وصيغة التسليم وموعد الإنجاز."}}
+    ]
+  }
+  </script>
   <title>جيو الرافدين | خدمات جغرافية برؤية أعمق</title>
   <link rel="icon" href="assets/geo-rafidain.ico" sizes="any">
   <link rel="apple-touch-icon" href="assets/geo-rafidain-icon.png">
   <link rel="manifest" href="manifest.webmanifest">
-  <link rel="stylesheet" href="styles.css?v=20260624">
+  <link rel="stylesheet" href="styles.css?v=20260624-faq">
 </head>
 <body>
   <a class="skip-link" href="#main">انتقل إلى المحتوى</a>
@@ -42,6 +55,7 @@
       <nav class="main-nav" id="main-nav" aria-label="التنقل الرئيسي">
         <a href="#services">الخدمات</a>
         <a href="#packages">الباقات</a>
+        <a href="#faq">الأسئلة</a>
         <a href="#data-library">مكتبة البيانات</a>
         <a href="#how-it-works">آلية العمل</a>
         <a href="#about">عن المؤسس</a>
@@ -187,6 +201,52 @@
         <div class="pricing-note reveal">
           <strong>ملاحظة مهنية:</strong>
           <span>الأسعار تقديرية ولا تشمل أي بيانات تجارية مدفوعة إن وجدت. يمكن تخفيض أو رفع السعر حسب مساحة الدراسة، عدد الخرائط، صعوبة التحليل، ووقت التسليم المطلوب.</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="section faq-section" id="faq">
+      <div class="container faq-layout">
+        <div class="faq-copy reveal">
+          <p class="eyebrow dark"><span></span> أسئلة شائعة</p>
+          <h2>إجابات مختصرة<br>قبل إرسال طلبك.</h2>
+          <p>هذه الأسئلة صُممت لتوضيح طريقة عمل جيو الرافدين للطلاب والباحثين، وتقليل سوء الفهم قبل رفع الملفات أو اختيار الباقة.</p>
+          <a class="text-link faq-link" href="#request">انتقل إلى نموذج الطلب <span aria-hidden="true">←</span></a>
+        </div>
+
+        <div class="faq-list reveal" aria-label="الأسئلة الشائعة">
+          <details open>
+            <summary>هل أحتاج إلى تسجيل الدخول لإرسال طلب؟</summary>
+            <p>نعم. تسجيل الدخول بالبريد يحفظ طلبك داخل حسابك الخاص، ويمنع ظهور بياناتك وملفاتك لأي شخص غيرك أو غير حساب مدير المنصة.</p>
+          </details>
+          <details>
+            <summary>هل البيانات الجغرافية والمرئيات الفضائية مجانية؟</summary>
+            <p>كثير من المصادر العامة مثل Sentinel وLandsat وSRTM مجانية. الرسوم هنا تكون مقابل اختيار البيانات المناسبة، تجهيزها، معالجتها، تحليلها، وتوثيقها للبحث.</p>
+          </details>
+          <details>
+            <summary>هل يمكن رفع Shapefile أو GeoJSON؟</summary>
+            <p>نعم. يمكن رفع GeoJSON مباشرة، وللـ Shapefile يفضّل ضغط مكوناته في ملف ZIP واحد حتى تصل الملفات كاملة وبشكل صحيح.</p>
+          </details>
+          <details>
+            <summary>كم تستغرق مدة تنفيذ الطلب؟</summary>
+            <p>الطلبات البسيطة قد تنجز خلال 1–3 أيام، أما التحليلات أو السلاسل الزمنية أو المشاريع الكبيرة فتحتاج مدة أطول حسب حجم البيانات ومنطقة الدراسة.</p>
+          </details>
+          <details>
+            <summary>هل الأسعار الموجودة في الباقات نهائية؟</summary>
+            <p>لا، هي أسعار تقديرية تبدأ من المبالغ الموضحة. السعر النهائي يعتمد على عدد الخرائط، نوع التحليل، مساحة الدراسة، صيغة التسليم، وموعد الإنجاز المطلوب.</p>
+          </details>
+          <details>
+            <summary>هل يمكن طلب استشارة بحثية فقط؟</summary>
+            <p>نعم. يمكن طلب استشارة لتحديد المنهجية، اختيار البيانات، بناء خطوات التحليل، أو مراجعة فكرة بحثية قبل بدء التنفيذ الكامل.</p>
+          </details>
+          <details>
+            <summary>هل المنصة مخصصة للعراق فقط؟</summary>
+            <p>الأولوية الحالية للعراق وبياناته المكانية، لكن يمكن استقبال مشاريع خارج العراق إذا كانت البيانات والمنهجية واضحة وقابلة للتنفيذ.</p>
+          </details>
+          <details>
+            <summary>كيف أتابع حالة طلبي بعد الإرسال؟</summary>
+            <p>بعد إرسال الطلب يظهر رقم خاص به. يمكنك فتح لوحة المتابعة للاطلاع على الحالة، نسبة الإنجاز، رسالة المدير، والسعر أو موعد التسليم عند إضافتهما.</p>
+          </details>
         </div>
       </div>
     </section>
@@ -423,7 +483,7 @@
   <footer class="site-footer">
     <div class="container footer-main">
       <a class="brand footer-brand" href="#top"><span class="brand-mark" aria-hidden="true"><img src="assets/iraq-mark.svg" alt=""></span><span><strong>جيو الرافدين</strong><small>بيانات مكانية، رؤية أعمق</small></span></a>
-      <div class="footer-links"><a href="#services">الخدمات</a><a href="#packages">الباقات</a><a href="#data-library">البيانات</a><a href="#about">عن المؤسس</a><a href="dashboard.html">لوحة المتابعة</a><a href="privacy.html">الخصوصية</a><a href="terms.html">شروط الاستخدام</a></div>
+      <div class="footer-links"><a href="#services">الخدمات</a><a href="#packages">الباقات</a><a href="#faq">الأسئلة</a><a href="#data-library">البيانات</a><a href="#about">عن المؤسس</a><a href="dashboard.html">لوحة المتابعة</a><a href="privacy.html">الخصوصية</a><a href="terms.html">شروط الاستخدام</a></div>
       <a class="footer-cta" href="#request">ابدأ طلباً جديداً <span>←</span></a>
     </div>
     <div class="container footer-bottom"><span>© <span id="year"></span> جيو الرافدين. جميع الحقوق محفوظة.</span><a href="mailto:mmssuu76@gmail.com">mmssuu76@gmail.com</a></div>

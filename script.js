@@ -244,6 +244,91 @@
     if (window.turnstile && captchaWidgetId !== null) window.turnstile.reset(captchaWidgetId);
   };
 
+  const renderRequestSuccess = (result, user) => {
+    const fileFailures = result.fileFailures || [];
+    const requestNumber = result.request.request_number;
+    const hasFileWarning = fileFailures.length > 0;
+
+    formStatus.replaceChildren();
+    formStatus.className = `form-status request-success-card ${hasFileWarning ? 'warning' : 'success'}`;
+
+    const icon = document.createElement('span');
+    icon.className = 'request-success-icon';
+    icon.setAttribute('aria-hidden', 'true');
+    icon.textContent = hasFileWarning ? '!' : '✓';
+
+    const content = document.createElement('div');
+    content.className = 'request-success-content';
+
+    const kicker = document.createElement('span');
+    kicker.className = 'request-success-kicker';
+    kicker.textContent = hasFileWarning ? 'تم حفظ الطلب مع تنبيه للملفات' : 'تم استلام الطلب بأمان';
+
+    const title = document.createElement('h3');
+    title.textContent = 'تم إنشاء طلبك بنجاح';
+
+    const summary = document.createElement('p');
+    summary.append(document.createTextNode('رقم الطلب: '));
+    const number = document.createElement('strong');
+    number.textContent = requestNumber;
+    summary.append(number, document.createTextNode('. احتفظ بهذا الرقم للمتابعة داخل لوحة طلباتي.'));
+
+    if (hasFileWarning) {
+      const warning = document.createElement('p');
+      warning.className = 'request-success-warning';
+      warning.textContent = `تم حفظ بيانات الطلب، لكن تعذر رفع ${fileFailures.length} من الملفات. يمكنك إعادة رفع الملفات لاحقاً أو إرسال الطلب بدونها للمراجعة الأولية.`;
+      content.append(kicker, title, summary, warning);
+    } else {
+      content.append(kicker, title, summary);
+    }
+
+    const steps = document.createElement('ol');
+    steps.className = 'request-success-steps';
+    [
+      ['01', 'مراجعة أولية', 'سنراجع وصف الطلب والبيانات المطلوبة للتأكد من وضوح المسار العلمي.'],
+      ['02', 'تحديد المنهج والمدة', 'سيتم تحديث الطلب بالسعر المقترح ونسبة التقدم وموعد التسليم عند توفرها.'],
+      ['03', 'المتابعة من حسابك', `يمكنك فتح لوحة طلباتي باستخدام البريد ${user.email || 'المسجل'} لمتابعة الحالة.`]
+    ].forEach(([numberText, heading, text]) => {
+      const item = document.createElement('li');
+      const stepNumber = document.createElement('span');
+      stepNumber.textContent = numberText;
+      const stepBody = document.createElement('div');
+      const stepHeading = document.createElement('strong');
+      stepHeading.textContent = heading;
+      const stepText = document.createElement('small');
+      stepText.textContent = text;
+      stepBody.append(stepHeading, stepText);
+      item.append(stepNumber, stepBody);
+      steps.append(item);
+    });
+
+    const actions = document.createElement('div');
+    actions.className = 'request-success-actions';
+
+    const requestsLink = document.createElement('a');
+    requestsLink.href = 'dashboard.html';
+    requestsLink.className = 'button button-small';
+    requestsLink.textContent = 'فتح لوحة طلباتي';
+
+    const copyButton = document.createElement('button');
+    copyButton.type = 'button';
+    copyButton.className = 'copy-request-number';
+    copyButton.textContent = 'نسخ رقم الطلب';
+    copyButton.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(requestNumber);
+        copyButton.textContent = 'تم نسخ الرقم';
+        setTimeout(() => { copyButton.textContent = 'نسخ رقم الطلب'; }, 1800);
+      } catch {
+        copyButton.textContent = 'انسخ الرقم يدوياً';
+      }
+    });
+
+    actions.append(requestsLink, copyButton);
+    content.append(steps, actions);
+    formStatus.append(icon, content);
+  };
+
   const refreshAuthUi = async () => {
     setAuthStatus();
     const ready = backend?.status === 'ready';
@@ -326,6 +411,7 @@
 
   form?.addEventListener('submit', async event => {
     event.preventDefault();
+    formStatus.replaceChildren();
     formStatus.className = 'form-status';
     form.querySelectorAll('.invalid').forEach(element => element.classList.remove('invalid'));
 
@@ -367,19 +453,7 @@
         deadline: formValue(data, 'deadline')
       }, [...fileInput.files]);
 
-      const warning = result.fileFailures.length
-        ? ` تم حفظ الطلب، لكن تعذر رفع ${result.fileFailures.length} من الملفات.`
-        : '';
-      formStatus.replaceChildren();
-      formStatus.append(document.createTextNode('تم حفظ الطلب بأمان. رقم الطلب: '));
-      const requestNumber = document.createElement('strong');
-      requestNumber.textContent = result.request.request_number;
-      formStatus.append(requestNumber, document.createTextNode(`.${warning} `));
-      const requestsLink = document.createElement('a');
-      requestsLink.href = 'dashboard.html';
-      requestsLink.textContent = 'عرض طلباتي';
-      formStatus.append(requestsLink);
-      formStatus.classList.add(result.fileFailures.length ? 'error' : 'success');
+      renderRequestSuccess(result, user);
       form.reset();
       charCount.textContent = '0';
       fileLabel.textContent = 'حتى 5 ملفات، 10MB لكل ملف';

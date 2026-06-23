@@ -6,6 +6,8 @@ $svgPath = Join-Path $projectRoot 'assets\iraq-mark.svg'
 $iconPath = Join-Path $projectRoot 'assets\geo-rafidain.ico'
 $desktopIconPath = Join-Path $projectRoot 'assets\geo-rafidain-desktop.ico'
 $previewPath = Join-Path $projectRoot 'assets\geo-rafidain-icon.png'
+$pwaIcon192Path = Join-Path $projectRoot 'assets\geo-rafidain-pwa-192.png'
+$pwaIcon512Path = Join-Path $projectRoot 'assets\geo-rafidain-pwa-512.png'
 $launcherPath = Join-Path $projectRoot 'Start-GeoRafidain.cmd'
 $desktopPath = [Environment]::GetFolderPath([Environment+SpecialFolder]::DesktopDirectory)
 $siteUrl = 'https://mmssuu76-tech.github.io/geo-rafidain/'
@@ -246,7 +248,12 @@ function Save-PngIcon {
 
 $previewBitmap = New-GeoRafidainIconBitmap -Size 512
 $previewBitmap.Save($previewPath, [Drawing.Imaging.ImageFormat]::Png)
+$previewBitmap.Save($pwaIcon512Path, [Drawing.Imaging.ImageFormat]::Png)
 $previewBitmap.Dispose()
+
+$pwaIcon192 = New-GeoRafidainIconBitmap -Size 192
+$pwaIcon192.Save($pwaIcon192Path, [Drawing.Imaging.ImageFormat]::Png)
+$pwaIcon192.Dispose()
 
 Save-PngIcon -Path $iconPath -Sizes @(16, 24, 32, 48, 64, 128, 256)
 Copy-Item -LiteralPath $iconPath -Destination $desktopIconPath -Force

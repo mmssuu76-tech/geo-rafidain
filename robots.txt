@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /geo-rafidain/
+Disallow: /geo-rafidain/dashboard.html
+Disallow: /geo-rafidain/security.html
+
+Sitemap: https://mmssuu76-tech.github.io/geo-rafidain/sitemap.xml

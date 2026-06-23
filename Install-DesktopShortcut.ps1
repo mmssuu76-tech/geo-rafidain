@@ -7,15 +7,14 @@ $iconPath = Join-Path $projectRoot 'assets\geo-rafidain.ico'
 $previewPath = Join-Path $projectRoot 'assets\geo-rafidain-icon.png'
 $launcherPath = Join-Path $projectRoot 'Start-GeoRafidain.cmd'
 $desktopPath = [Environment]::GetFolderPath([Environment+SpecialFolder]::DesktopDirectory)
-$arabicShortcutName = (-join ([char[]](0x062C,0x064A,0x0648,0x20,0x0627,0x0644,0x0631,0x0627,0x0641,0x062F,0x064A,0x0646))) + '.lnk'
+$siteUrl = 'https://mmssuu76-tech.github.io/geo-rafidain/'
+$arabicBaseName = (-join ([char[]](0x062C,0x064A,0x0648,0x20,0x0627,0x0644,0x0631,0x0627,0x0641,0x062F,0x064A,0x0646)))
+$arabicShortcutName = $arabicBaseName + '.url'
 $arabicShortcutPath = Join-Path $desktopPath $arabicShortcutName
-$shortcutPath = Join-Path $desktopPath 'GeoRafidain.lnk'
-$powerShellPath = Join-Path $PSHOME 'powershell.exe'
-$serverPath = Join-Path $projectRoot 'local-server.ps1'
+$legacyArabicShortcutPath = Join-Path $desktopPath ($arabicBaseName + '.lnk')
+$legacyShortcutPath = Join-Path $desktopPath 'GeoRafidain.lnk'
 
 if (-not (Test-Path -LiteralPath $svgPath -PathType Leaf)) { throw "Iraq mark SVG was not found: $svgPath" }
-if (-not (Test-Path -LiteralPath $launcherPath -PathType Leaf)) { throw "Platform launcher was not found: $launcherPath" }
-if (-not (Test-Path -LiteralPath $serverPath -PathType Leaf)) { throw "Platform server was not found: $serverPath" }
 
 Add-Type -AssemblyName System.Drawing
 
@@ -87,10 +86,10 @@ $bitmap.Dispose()
 
 $shell = New-Object -ComObject WScript.Shell
 
-# Remove only an older shortcut created by this installer with the same exact target.
+# Remove only older local shortcuts created by this installer.
 Get-ChildItem -LiteralPath $desktopPath -Filter '*.lnk' -File | ForEach-Object {
   $candidate = $shell.CreateShortcut($_.FullName)
-  if (($candidate.TargetPath -eq $launcherPath -or $candidate.Arguments -like '*local-server.ps1*') -and $_.FullName -ne $shortcutPath) {
+  if ($candidate.TargetPath -eq $launcherPath -or $candidate.Arguments -like '*local-server.ps1*' -or $_.FullName -eq $legacyShortcutPath -or $_.FullName -eq $legacyArabicShortcutPath) {
     Remove-Item -LiteralPath $_.FullName -Force
   }
   [void][Runtime.InteropServices.Marshal]::FinalReleaseComObject($candidate)
@@ -100,16 +99,14 @@ if (Test-Path -LiteralPath $arabicShortcutPath) {
   Remove-Item -LiteralPath $arabicShortcutPath -Force
 }
 
-$shortcut = $shell.CreateShortcut($shortcutPath)
-$shortcut.TargetPath = $powerShellPath
-$shortcut.Arguments = "-NoProfile -ExecutionPolicy Bypass -File `"$serverPath`""
-$shortcut.WorkingDirectory = $projectRoot
-$shortcut.IconLocation = "$iconPath,0"
-$shortcut.Description = 'Launch the local GeoRafidain platform'
-$shortcut.WindowStyle = 1
-$shortcut.Save()
+$urlShortcutLines = @(
+  '[InternetShortcut]'
+  "URL=$siteUrl"
+  "IconFile=$iconPath"
+  'IconIndex=0'
+)
 
-[void][Runtime.InteropServices.Marshal]::FinalReleaseComObject($shortcut)
+[IO.File]::WriteAllLines($arabicShortcutPath, $urlShortcutLines, [Text.Encoding]::ASCII)
 [void][Runtime.InteropServices.Marshal]::FinalReleaseComObject($shell)
 
-Write-Output $shortcutPath
+Write-Output $arabicShortcutPath

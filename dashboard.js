@@ -9,6 +9,8 @@
   const empty = document.querySelector('#empty-state');
   const search = document.querySelector('#request-search');
   const filter = document.querySelector('#status-filter');
+  const panelTools = document.querySelector('.panel-tools');
+  const metricGrid = document.querySelector('.metric-grid');
   const dialog = document.querySelector('#request-dialog');
   const dialogStatus = document.querySelector('#dialog-status');
   const dialogProgress = document.querySelector('#dialog-progress');
@@ -29,6 +31,38 @@
   let selectedId = null;
   let profile = null;
   let noticeTimer = null;
+
+  if (metricGrid && !document.querySelector('#visible-count')) {
+    metricGrid.insertAdjacentHTML('afterend', `
+    <section class="ops-grid" aria-label="مؤشرات تشغيلية للطلبات">
+      <article><small>الطلبات المعروضة</small><strong id="visible-count">0</strong><span id="filter-summary">كل الطلبات</span></article>
+      <article><small>متوسط الإنجاز</small><strong id="average-progress">0%</strong><span>حسب النتائج الحالية</span></article>
+      <article><small>تسليم خلال 7 أيام</small><strong id="due-soon-count">0</strong><span>طلبات تحتاج متابعة قريبة</span></article>
+      <article><small>الملفات المرفقة</small><strong id="files-count">0</strong><span>ضمن الطلبات المعروضة</span></article>
+    </section>`);
+  }
+
+  if (panelTools && !document.querySelector('#service-filter')) {
+    panelTools.insertAdjacentHTML('beforeend', `
+      <select id="service-filter" aria-label="تصفية حسب نوع الخدمة"><option value="all">جميع الخدمات</option></select>
+      <select id="sort-filter" aria-label="ترتيب الطلبات">
+        <option value="newest">الأحدث أولاً</option>
+        <option value="oldest">الأقدم أولاً</option>
+        <option value="progress-desc">الأعلى إنجازًا</option>
+        <option value="progress-asc">الأقل إنجازًا</option>
+        <option value="delivery-soon">الأقرب للتسليم</option>
+      </select>
+      <button class="tool-button" id="reset-filters" type="button">إعادة ضبط</button>`);
+  }
+
+  const serviceFilter = document.querySelector('#service-filter');
+  const sortFilter = document.querySelector('#sort-filter');
+  const resetFiltersButton = document.querySelector('#reset-filters');
+  const visibleCount = document.querySelector('#visible-count');
+  const averageProgress = document.querySelector('#average-progress');
+  const dueSoonCount = document.querySelector('#due-soon-count');
+  const filesCount = document.querySelector('#files-count');
+  const filterSummaryText = document.querySelector('#filter-summary');
 
   const statusLabels = {
     new: 'جديد',
@@ -53,6 +87,35 @@
     : '—';
 
   const progressValue = value => Math.min(100, Math.max(0, Number(value) || 0));
+
+  const deliveryDateValue = item => item.expected_delivery_date || item.deadline || '';
+
+  const deliveryTimestamp = item => {
+    const value = deliveryDateValue(item);
+    if (!value) return Number.POSITIVE_INFINITY;
+    const timestamp = new Date(`${value}T00:00:00`).getTime();
+    return Number.isFinite(timestamp) ? timestamp : Number.POSITIVE_INFINITY;
+  };
+
+  const deliverySummary = item => {
+    if (item.expected_delivery_date) return `التسليم المتوقع: ${dateLabel(item.expected_delivery_date)}`;
+    if (item.deadline) return `الموعد المطلوب: ${dateLabel(item.deadline)}`;
+    return 'لا يوجد موعد محدد';
+  };
+
+  const isDueSoon = item => {
+    const timestamp = deliveryTimestamp(item);
+    if (!Number.isFinite(timestamp) || item.status === 'completed') return false;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const weekAhead = today.getTime() + (7 * 24 * 60 * 60 * 1000);
+    return timestamp >= today.getTime() && timestamp <= weekAhead;
+  };
+
+  const createdTimestamp = item => {
+    const timestamp = new Date(item.created_at || 0).getTime();
+    return Number.isFinite(timestamp) ? timestamp : 0;
+  };
 
   const priceLabel = value => value === null || value === undefined || value === ''
     ? 'لم يحدد بعد'
@@ -107,14 +170,64 @@
     document.querySelector('#done-count').textContent = data.filter(item => item.status === 'completed').length;
   };
 
-  const render = () => {
-    updateMetrics(requests);
+  const updateServiceOptions = () => {
+    if (!serviceFilter) return;
+    const current = serviceFilter.value;
+    const services = [...new Set(requests.map(item => item.service).filter(Boolean))]
+      .sort((first, second) => first.localeCompare(second, 'ar'));
+    serviceFilter.innerHTML = '<option value="all">جميع الخدمات</option>'
+      + services.map(service => `<option value="${safe(service)}">${safe(service)}</option>`).join('');
+    serviceFilter.value = services.includes(current) ? current : 'all';
+  };
+
+  const sortVisibleRequests = data => {
+    const mode = sortFilter?.value || 'newest';
+    return [...data].sort((first, second) => {
+      if (mode === 'oldest') return createdTimestamp(first) - createdTimestamp(second);
+      if (mode === 'progress-desc') return progressValue(second.progress_percent) - progressValue(first.progress_percent);
+      if (mode === 'progress-asc') return progressValue(first.progress_percent) - progressValue(second.progress_percent);
+      if (mode === 'delivery-soon') return deliveryTimestamp(first) - deliveryTimestamp(second);
+      return createdTimestamp(second) - createdTimestamp(first);
+    });
+  };
+
+  const filterSummary = () => {
+    const parts = [];
+    if (filter?.value && filter.value !== 'all') parts.push(statusLabels[filter.value] || filter.value);
+    if (serviceFilter?.value && serviceFilter.value !== 'all') parts.push(serviceFilter.value);
+    if (search?.value.trim()) parts.push('بحث نشط');
+    return parts.join(' · ') || 'كل الطلبات';
+  };
+
+  const getVisibleRequests = () => {
     const term = search.value.trim().toLowerCase();
     const wantedStatus = filter.value;
+    const wantedService = serviceFilter?.value || 'all';
     const visible = requests.filter(item => {
-      const haystack = `${item.request_number} ${item.name} ${item.service} ${item.study_area || ''}`.toLowerCase();
-      return (!term || haystack.includes(term)) && (wantedStatus === 'all' || item.status === wantedStatus);
+      const haystack = `${item.request_number} ${item.name} ${item.contact || ''} ${item.service} ${item.study_area || ''} ${item.admin_message || ''}`.toLowerCase();
+      const matchesSearch = !term || haystack.includes(term);
+      const matchesStatus = wantedStatus === 'all' || item.status === wantedStatus;
+      const matchesService = wantedService === 'all' || item.service === wantedService;
+      return matchesSearch && matchesStatus && matchesService;
     });
+    return sortVisibleRequests(visible);
+  };
+
+  const updateOperationalInsights = visible => {
+    if (!visibleCount) return;
+    const totalProgress = visible.reduce((sum, item) => sum + progressValue(item.progress_percent), 0);
+    const attachedFiles = visible.reduce((sum, item) => sum + (item.request_files?.length || 0), 0);
+    visibleCount.textContent = visible.length;
+    averageProgress.textContent = visible.length ? `${Math.round(totalProgress / visible.length)}%` : '0%';
+    dueSoonCount.textContent = visible.filter(isDueSoon).length;
+    filesCount.textContent = attachedFiles;
+    filterSummaryText.textContent = filterSummary();
+  };
+
+  const render = () => {
+    updateMetrics(requests);
+    const visible = getVisibleRequests();
+    updateOperationalInsights(visible);
 
     list.innerHTML = visible.map(item => `
       <tr>
@@ -122,7 +235,7 @@
         <td class="client-cell"><strong>${safe(item.name)}</strong><span>${safe(item.service)}</span></td>
         <td class="area-cell">${safe(item.study_area || 'غير محددة')}</td>
         <td><div class="table-progress"><span style="width:${progressValue(item.progress_percent)}%"></span><small>${progressValue(item.progress_percent)}%</small></div></td>
-        <td class="date-cell">${dateLabel(item.created_at)}</td>
+        <td class="date-cell"><strong>${dateLabel(item.created_at)}</strong><span>${safe(deliverySummary(item))}</span></td>
         <td><span class="status-pill ${statusClasses[item.status] || 'status-new'}">${statusLabels[item.status] || safe(item.status)}</span></td>
         <td><button class="view-button" type="button" data-id="${safe(item.id)}">التفاصيل</button></td>
       </tr>`).join('');
@@ -176,6 +289,7 @@
     refreshButton.textContent = 'جارٍ التحديث...';
     try {
       requests = await backend.listRequests();
+      updateServiceOptions();
       clearPanelError();
       render();
       lastRefresh.textContent = `آخر تحديث: ${new Intl.DateTimeFormat('ar-IQ', { hour: 'numeric', minute: '2-digit' }).format(new Date())}`;
@@ -210,6 +324,15 @@
 
   search.addEventListener('input', render);
   filter.addEventListener('change', render);
+  serviceFilter?.addEventListener('change', render);
+  sortFilter?.addEventListener('change', render);
+  resetFiltersButton?.addEventListener('click', () => {
+    search.value = '';
+    filter.value = 'all';
+    if (serviceFilter) serviceFilter.value = 'all';
+    if (sortFilter) sortFilter.value = 'newest';
+    render();
+  });
   refreshButton.addEventListener('click', () => loadRequests(true));
 
   dialogStatus.addEventListener('change', () => {

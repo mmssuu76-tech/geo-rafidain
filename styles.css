@@ -154,6 +154,16 @@ svg { display: block; }
 .request-form input:focus, .request-form select:focus, .request-form textarea:focus { border-color: #7b9d91; box-shadow: 0 0 0 3px rgba(18,63,56,.08); }
 .request-form .invalid { border-color: #c86653; box-shadow: 0 0 0 3px rgba(200,102,83,.08); }
 .request-form input::placeholder, .request-form textarea::placeholder { color: #a3aaa6; }
+.request-guidance { display: grid; grid-template-columns: 1.05fr .95fr; gap: 18px; align-items: center; margin: 2px 0 22px; padding: 17px 18px; color: #113b35; background: linear-gradient(135deg, #f8f1df, #fffaf0); border: 1px solid #eadbbd; border-radius: 16px 16px 16px 5px; }
+.request-guidance span, .request-guidance strong { display: block; }
+.request-guidance span { color: var(--rust); font-size: 8px; letter-spacing: .05em; font-weight: 800; margin-bottom: 5px; }
+.request-guidance strong { font-size: 13px; line-height: 1.8; }
+.request-guidance ul { margin: 0; padding: 0 18px 0 0; color: #66736d; font-size: 9px; line-height: 1.9; }
+.form-section-title { display: flex; align-items: center; gap: 12px; margin: 3px 0 17px; padding-top: 4px; }
+.form-section-title > span { flex: 0 0 31px; height: 31px; display: grid; place-items: center; color: var(--forest); background: #e7f1ec; border-radius: 10px 10px 10px 3px; font-weight: 800; font-size: 10px; }
+.form-section-title strong, .form-section-title small { display: block; }
+.form-section-title strong { font-size: 13px; color: var(--ink); }
+.form-section-title small { color: var(--muted); font-size: 8px; margin-top: 2px; }
 
 .file-label small { display: block; margin-top: .45rem; color: var(--muted); font-weight: 500; }
 .file-selection-details { display: grid; gap: .4rem; margin: -.35rem 0 .4rem; padding: 0; list-style: none; }
@@ -239,7 +249,7 @@ svg { display: block; }
   .stats-grid strong { font-size: 20px; }.stats-grid span { font-size: 9px; }
   .service-grid, .data-grid { grid-template-columns: 1fr; }.service-card { min-height: 340px; border-top: 1px solid var(--line); border-inline-start: 0; }.service-card:first-child { border-top:0; }
   .process-line { grid-template-columns: 1fr; }.process-step p { max-width: 250px; }
-  .form-row { grid-template-columns: 1fr; gap: 0; }.request-form { padding: 23px 18px; }.request-copy { text-align: center; }.request-promise { text-align: right; }
+  .form-row { grid-template-columns: 1fr; gap: 0; }.request-form { padding: 23px 18px; }.request-copy { text-align: center; }.request-promise { text-align: right; }.request-guidance { grid-template-columns: 1fr; gap: 10px; text-align: right; }
   .study-map-field { padding: 13px; }.study-map-heading { flex-direction: column; gap: 7px; }.study-map-layout { grid-template-columns: 1fr; }.study-map-canvas { min-height: 285px; }.study-map-svg { height: 285px; }.study-map-controls { padding-bottom: 0; }
   .footer-links { gap: 15px; }.footer-bottom { flex-direction: column; justify-content: center; gap: 3px; }
 }

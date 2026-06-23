@@ -229,6 +229,69 @@
             </label>
             <label>الموعد المطلوب<input type="date" name="deadline"></label>
           </div>
+          <div class="request-guidance">
+            <div><span>نموذج طلب احترافي</span><strong>كل تفصيل تضيفه هنا يقلّل وقت المراجعة ويجعل التسعير والتنفيذ أدق.</strong></div>
+            <ul>
+              <li>حدّد نوع المخرج النهائي.</li>
+              <li>اذكر نوع البيانات أو الفترة الزمنية إن وجدت.</li>
+              <li>ارفع أي ملف حدود أو عينة بيانات متوفرة.</li>
+            </ul>
+          </div>
+          <div class="form-section-title"><span>01</span><div><strong>تفاصيل تنظيم الطلب</strong><small>حقول تساعد على تحويل الطلب إلى مهمة واضحة قابلة للتنفيذ.</small></div></div>
+          <div class="form-row">
+            <label>مستوى الأولوية
+              <select name="priority">
+                <option>عادي - مراجعة وفق الدور</option>
+                <option>متوسط - لدي موعد بحث قريب</option>
+                <option>عاجل - أحتاج استجابة سريعة</option>
+              </select>
+            </label>
+            <label>نوع المخرج المطلوب
+              <select name="outputType">
+                <option>خريطة جاهزة للنشر أو الطباعة</option>
+                <option>تحليل جغرافي مع نتائج قابلة للتفسير</option>
+                <option>بيانات مكانية مجهزة للاستخدام</option>
+                <option>تقرير أو منهجية بحثية مختصرة</option>
+                <option>استشارة وتوجيه علمي</option>
+                <option>غير محدد - أحتاج إلى اقتراح</option>
+              </select>
+            </label>
+          </div>
+          <div class="form-row">
+            <label>نوع البيانات المطلوبة أو المتوفرة
+              <select name="dataType">
+                <option>غير محدد بعد</option>
+                <option>مرئيات فضائية</option>
+                <option>حدود إدارية أو شيب فايل</option>
+                <option>بيانات مناخية أو بيئية</option>
+                <option>نموذج ارتفاعات DEM</option>
+                <option>بيانات ميدانية أو جدول Excel</option>
+                <option>صور أو خرائط قديمة</option>
+              </select>
+            </label>
+            <label>الفترة الزمنية للدراسة<input type="text" name="timeRange" maxlength="120" placeholder="مثال: 2015-2025 أو شهر تموز 2024"></label>
+          </div>
+          <div class="form-row">
+            <label>صيغة التسليم المفضلة
+              <select name="deliveryFormat">
+                <option>PDF + صورة PNG عالية الدقة</option>
+                <option>Shapefile / GeoJSON</option>
+                <option>Excel / CSV</option>
+                <option>ملف مشروع QGIS أو ArcGIS</option>
+                <option>Word / تقرير بحثي</option>
+                <option>حسب ما يناسب المشروع</option>
+              </select>
+            </label>
+            <label>نظام الإحداثيات
+              <select name="coordinateSystem">
+                <option>WGS 84</option>
+                <option>UTM Zone 38N</option>
+                <option>UTM Zone 39N</option>
+                <option>حسب بيانات المشروع</option>
+                <option>غير متأكد</option>
+              </select>
+            </label>
+          </div>
           <section class="study-map-field" id="study-map-field" aria-labelledby="study-map-title">
             <div class="study-map-heading">
               <div><span>تحديد مكاني</span><h3 id="study-map-title">اختر المحافظة من الخريطة</h3><p>الخريطة مشتقة من طبقة المحافظات العراقية التي زودتنا بها.</p></div>

@@ -22,7 +22,8 @@
 .progress-detail > div { display: flex; justify-content: space-between; align-items: center; }
 .progress-detail > span { display: block; height: 8px; margin-top: 8px; overflow: hidden; border-radius: 20px; background: #e1e6e1; }
 .progress-detail > span i { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #2b7768, #8dc7b3); }
-.admin-message { color: #315d52; background: #edf5f1; white-space: pre-wrap; }
+.detail-description, .admin-message { white-space: pre-wrap; }
+.admin-message { color: #315d52; background: #edf5f1; }
 .dialog-footer { display: block; max-height: 39vh; overflow: auto; padding: 18px 28px; }
 .admin-workflow-fields { display: grid !important; grid-template-columns: repeat(2, 1fr); gap: 12px 14px !important; }
 .admin-workflow-fields label { position: relative; margin: 0; }

@@ -51,6 +51,7 @@
     if (code.startsWith('FILE_TOO_LARGE:')) return `الملف ${code.split(':')[1]} أكبر من 10MB.`;
     if (code.startsWith('FILE_TYPE_NOT_ALLOWED:')) return `نوع الملف ${code.split(':')[1]} غير مسموح.`;
     if (code.startsWith('FILE_EMPTY:')) return `الملف ${code.split(':')[1]} فارغ.`;
+    if (code === 'DESCRIPTION_TOO_LONG') return 'تفاصيل الطلب طويلة جدًا. اختصر وصف المشروع قليلًا ثم أعد الإرسال.';
     if (/row-level security|42501/i.test(code)) return 'تعذر حفظ الطلب. قد تكون تجاوزت حد خمسة طلبات في الساعة أو لا تملك الصلاحية.';
     if (/token.*expired|invalid.*token|otp/i.test(code)) return 'رابط الدخول غير صالح أو انتهت صلاحيته. اطلب رابطاً جديداً.';
     if (/fetch|network/i.test(code)) return 'تعذر الاتصال بالخادم. تحقق من الإنترنت وحاول مجدداً.';
@@ -95,6 +96,32 @@
     });
   });
 
+  const setSelectByText = (name, wantedText) => {
+    const field = form?.elements[name];
+    if (!field || !wantedText) return;
+    const option = [...field.options].find(item => item.text === wantedText || item.value === wantedText);
+    if (option) field.value = option.value || option.text;
+  };
+
+  const suggestIntakeDefaults = requested => {
+    if (!requested) return;
+    if (/Sentinel|Landsat|استشعار|مرئيات/i.test(requested)) {
+      setSelectByText('dataType', 'مرئيات فضائية');
+      setSelectByText('outputType', 'بيانات مكانية مجهزة للاستخدام');
+    }
+    if (/SRTM|DEM|ارتفاع/i.test(requested)) {
+      setSelectByText('dataType', 'نموذج ارتفاعات DEM');
+      setSelectByText('outputType', 'بيانات مكانية مجهزة للاستخدام');
+    }
+    if (/خريطة|خرائط|رسم/i.test(requested)) {
+      setSelectByText('outputType', 'خريطة جاهزة للنشر أو الطباعة');
+    }
+    if (/استشارة|بحث/i.test(requested)) {
+      setSelectByText('outputType', 'استشارة وتوجيه علمي');
+      setSelectByText('deliveryFormat', 'Word / تقرير بحثي');
+    }
+  };
+
   document.querySelectorAll('.service-select').forEach(button => {
     button.addEventListener('click', () => {
       const requested = button.dataset.service;
@@ -105,6 +132,7 @@
         form.elements.description.value = `أرغب في طلب: ${requested}. `;
         charCount.textContent = form.elements.description.value.length;
       }
+      suggestIntakeDefaults(requested);
       document.querySelector('#request').scrollIntoView({ behavior: 'smooth' });
       setTimeout(() => serviceSelect.focus(), 500);
     });
@@ -114,6 +142,28 @@
     charCount.textContent = description.value.length;
     description.classList.toggle('invalid', description.value.length > 0 && description.value.length < 20);
   });
+
+  const formValue = (data, name) => String(data.get(name) || '').trim();
+
+  const buildEnhancedDescription = data => {
+    const baseDescription = formValue(data, 'description');
+    const detailLines = [
+      ['مستوى الأولوية', formValue(data, 'priority')],
+      ['نوع المخرج المطلوب', formValue(data, 'outputType')],
+      ['نوع البيانات المطلوبة/المتوفرة', formValue(data, 'dataType')],
+      ['الفترة الزمنية للدراسة', formValue(data, 'timeRange')],
+      ['صيغة التسليم المفضلة', formValue(data, 'deliveryFormat')],
+      ['نظام الإحداثيات', formValue(data, 'coordinateSystem')],
+      ['المحافظة المحددة من الخريطة', formValue(data, 'governorate')]
+    ].filter(([, value]) => value && value !== 'غير محدد بعد');
+
+    const enhanced = detailLines.length
+      ? `${baseDescription}\n\nتفاصيل تنظيم الطلب:\n${detailLines.map(([label, value]) => `- ${label}: ${value}`).join('\n')}`
+      : baseDescription;
+
+    if (enhanced.length > 5000) throw new Error('DESCRIPTION_TOO_LONG');
+    return enhanced;
+  };
 
   const readableFileSize = bytes => bytes < 1024 * 1024
     ? `${Math.max(1, Math.round(bytes / 1024))} كيلوبايت`
@@ -298,12 +348,12 @@
       submitButton.querySelector('span').textContent = 'جارٍ الحفظ والرفع...';
 
       const result = await backend.createRequest({
-        name: String(data.get('name')).trim(),
-        contact: String(data.get('contact')).trim(),
-        service: String(data.get('service')).trim(),
-        studyArea: String(data.get('studyArea')).trim(),
-        description: String(data.get('description')).trim(),
-        deadline: String(data.get('deadline') || '')
+        name: formValue(data, 'name'),
+        contact: formValue(data, 'contact'),
+        service: formValue(data, 'service'),
+        studyArea: formValue(data, 'studyArea'),
+        description: buildEnhancedDescription(data),
+        deadline: formValue(data, 'deadline')
       }, [...fileInput.files]);
 
       const warning = result.fileFailures.length

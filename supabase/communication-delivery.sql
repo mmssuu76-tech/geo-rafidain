@@ -100,7 +100,7 @@ declare
   current_user_id uuid := (select auth.uid());
   clean_body text := btrim(coalesce(p_body, ''));
   request_owner uuid;
-  current_role text;
+  actor_role text;
   created_message public.request_messages;
 begin
   if current_user_id is null then
@@ -118,16 +118,16 @@ begin
     raise exception 'REQUEST_NOT_FOUND' using errcode = 'P0002';
   end if;
 
-  select account.role into current_role
+  select account.role into actor_role
   from public.profiles account
   where account.id = current_user_id;
 
-  if current_role = 'admin' then
+  if actor_role = 'admin' then
     if not coalesce((select private.admin_mfa_ok()), false) then
       raise exception 'ADMIN_MFA_REQUIRED' using errcode = '42501';
     end if;
   elsif request_owner = current_user_id then
-    current_role := 'client';
+    actor_role := 'client';
   else
     raise exception 'REQUEST_ACCESS_DENIED' using errcode = '42501';
   end if;
@@ -142,10 +142,10 @@ begin
   end if;
 
   insert into public.request_messages (request_id, sender_id, sender_role, body)
-  values (p_request_id, current_user_id, current_role, clean_body)
+  values (p_request_id, current_user_id, actor_role, clean_body)
   returning * into created_message;
 
-  if current_role = 'admin' then
+  if actor_role = 'admin' then
     insert into public.user_notifications
       (user_id, request_id, notification_type, title, body)
     values

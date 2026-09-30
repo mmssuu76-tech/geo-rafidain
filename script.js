@@ -127,6 +127,7 @@
 
   const requestedFromPage = new URLSearchParams(window.location.search).get('service');
   const resourceFromPage = new URLSearchParams(window.location.search).get('resource');
+  const projectFromPage = new URLSearchParams(window.location.search).get('project');
   if (requestedFromPage && serviceSelect) {
     const requestedOption = [...serviceSelect.options].find(item => item.text === requestedFromPage || item.value === requestedFromPage);
     if (requestedOption) {
@@ -135,7 +136,8 @@
     }
   }
   if (resourceFromPage && description) {
-    const resourceNote = `أرغب في تجهيز بيانات: ${resourceFromPage}. يرجى مساعدتي في تحديد الإصدار والفترة ومنطقة الدراسة المناسبة. `;
+    const projectNote = projectFromPage ? `عنوان البحث: ${projectFromPage}. ` : '';
+    const resourceNote = `${projectNote}أرغب في تجهيز بيانات: ${resourceFromPage}. يرجى مساعدتي في تحديد الإصدار والفترة ومنطقة الدراسة المناسبة. `;
     if (!description.value.trim()) description.value = resourceNote;
     charCount.textContent = description.value.length;
     setSelectByText('dataType', 'بيانات مكانية أخرى');

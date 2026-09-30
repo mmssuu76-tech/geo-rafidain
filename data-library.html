@@ -32,7 +32,7 @@
   <link rel="apple-touch-icon" href="assets/geo-rafidain-icon.png">
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="stylesheet" href="styles.css?v=20261001-library">
-  <link rel="stylesheet" href="data-library.css?v=20261001-library">
+  <link rel="stylesheet" href="data-library.css?v=20261001-workspace">
 </head>
 <body class="library-page">
   <a class="skip-link" href="#main">انتقل إلى المحتوى</a>
@@ -87,6 +87,11 @@
           <button id="clear-filters" type="button">مسح التصفية</button>
         </div>
 
+        <aside class="research-workspace-bar" aria-label="ملف البحث">
+          <div><span class="workspace-icon" aria-hidden="true">▤</span><p><strong>ملف البحث</strong><small>اجمع المصادر المناسبة ثم صدّر بياناتها ومراجعها في ملف واحد.</small></p></div>
+          <button id="open-workspace" type="button" aria-haspopup="dialog"><span id="workspace-count">0</span> مصادر مختارة <b>فتح الملف ←</b></button>
+        </aside>
+
         <div class="catalog-status" aria-live="polite"><p id="results-summary">جارٍ تحميل المصادر الموثقة…</p><span id="catalog-source"></span></div>
         <div class="resource-grid" id="resource-grid" aria-busy="true"></div>
         <div class="catalog-empty" id="catalog-empty" hidden><span>⌕</span><h3>لا توجد نتيجة مطابقة</h3><p>جرّب كلمة أوسع أو اختر جميع الموضوعات.</p><button type="button" id="empty-clear">إظهار جميع المصادر</button></div>
@@ -111,7 +116,27 @@
     <div class="resource-dialog-shell">
       <header><div><small id="resource-dialog-category"></small><h2 id="resource-dialog-title">تفاصيل المصدر</h2><p id="resource-dialog-en"></p></div><button id="resource-dialog-close" type="button" aria-label="إغلاق">×</button></header>
       <div class="resource-dialog-body" id="resource-dialog-body"></div>
-      <footer><a class="official-source-button" id="resource-access-link" href="#" target="_blank" rel="noopener noreferrer">فتح المصدر الرسمي ↗</a><a class="request-resource-button" id="resource-request-link" href="index.html#request">اطلب تجهيز البيانات ←</a></footer>
+      <footer><button class="save-resource-button" id="resource-save-button" type="button">أضف إلى ملف البحث</button><a class="official-source-button" id="resource-access-link" href="#" target="_blank" rel="noopener noreferrer">فتح المصدر الرسمي ↗</a><a class="request-resource-button" id="resource-request-link" href="index.html#request">اطلب تجهيز البيانات ←</a></footer>
+    </div>
+  </dialog>
+
+  <dialog class="workspace-dialog" id="workspace-dialog" aria-labelledby="workspace-dialog-title">
+    <div class="workspace-dialog-shell">
+      <header><div><small>مساحة عمل خاصة على جهازك</small><h2 id="workspace-dialog-title">ملف البحث</h2><p>رتّب مصادر الدراسة وصدّر بياناتها الوصفية قبل بدء التحليل.</p></div><button id="workspace-close" type="button" aria-label="إغلاق">×</button></header>
+      <div class="workspace-dialog-body">
+        <label class="workspace-title-field">عنوان البحث أو المشروع<input id="workspace-title" type="text" maxlength="120" placeholder="مثال: تغير الغطاء الأرضي في محافظة ذي قار"></label>
+        <div class="workspace-privacy-note"><span aria-hidden="true">✓</span><p><strong>خصوصية افتراضية</strong> يُحفظ هذا الملف في متصفحك فقط، ولا يُرسل إلى المنصة إلا إذا اخترت إنشاء طلب خدمة.</p></div>
+        <div class="workspace-list-heading"><div><strong>المصادر المختارة</strong><small id="workspace-selection-summary">لم تختر أي مصدر بعد</small></div><button id="workspace-clear" type="button" disabled>إفراغ القائمة</button></div>
+        <div class="workspace-list" id="workspace-list"></div>
+        <div class="workspace-empty" id="workspace-empty"><span aria-hidden="true">＋</span><h3>ابدأ بإضافة مصدر</h3><p>أغلق النافذة واضغط «إضافة لملف البحث» في بطاقة أي مصدر.</p></div>
+        <p class="workspace-notice" id="workspace-notice" role="status" aria-live="polite"></p>
+      </div>
+      <footer>
+        <button id="workspace-export-csv" type="button" disabled>تصدير جدول CSV</button>
+        <button id="workspace-export-citations" type="button" disabled>تصدير المراجع TXT</button>
+        <button id="workspace-share" type="button" disabled>نسخ رابط القائمة</button>
+        <a id="workspace-request" href="index.html#request" aria-disabled="true">اطلب تجهيز المجموعة ←</a>
+      </footer>
     </div>
   </dialog>
 
@@ -127,7 +152,7 @@
   <script src="vendor/supabase-2.108.2.min.js"></script>
   <script src="backend-config.js?v=20260624"></script>
   <script src="backend.js?v=20261001-library"></script>
-  <script src="data-library.js?v=20261001-library"></script>
+  <script src="data-library.js?v=20261001-workspace"></script>
   <script src="pwa.js?v=20260624"></script>
 </body>
 </html>

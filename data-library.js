@@ -18,6 +18,21 @@
   const dialogBody = document.querySelector('#resource-dialog-body');
   const accessLink = document.querySelector('#resource-access-link');
   const requestLink = document.querySelector('#resource-request-link');
+  const resourceSaveButton = document.querySelector('#resource-save-button');
+  const openWorkspaceButton = document.querySelector('#open-workspace');
+  const workspaceCount = document.querySelector('#workspace-count');
+  const workspaceDialog = document.querySelector('#workspace-dialog');
+  const workspaceClose = document.querySelector('#workspace-close');
+  const workspaceTitle = document.querySelector('#workspace-title');
+  const workspaceList = document.querySelector('#workspace-list');
+  const workspaceEmpty = document.querySelector('#workspace-empty');
+  const workspaceSummary = document.querySelector('#workspace-selection-summary');
+  const workspaceClear = document.querySelector('#workspace-clear');
+  const workspaceNotice = document.querySelector('#workspace-notice');
+  const workspaceExportCsv = document.querySelector('#workspace-export-csv');
+  const workspaceExportCitations = document.querySelector('#workspace-export-citations');
+  const workspaceShare = document.querySelector('#workspace-share');
+  const workspaceRequest = document.querySelector('#workspace-request');
 
   const categoryLabels = Object.freeze({
     satellite: 'مرئيات فضائية',
@@ -30,7 +45,12 @@
     vector: 'بيانات متجهة'
   });
 
+  const workspaceStorageKey = 'geoRafidain.researchWorkspace.v1';
+  const workspaceLimit = 12;
   let resources = [];
+  let activeResource = null;
+  let workspaceState = { title: '', slugs: [] };
+  let selectedSlugs = new Set();
 
   const normalizeArabic = value => String(value || '')
     .toLowerCase()
@@ -51,6 +71,73 @@
     featured: Boolean(item.featured),
     is_published: item.is_published !== false
   });
+
+  const loadWorkspaceState = () => {
+    try {
+      const saved = JSON.parse(localStorage.getItem(workspaceStorageKey) || '{}');
+      workspaceState = {
+        title: typeof saved.title === 'string' ? saved.title.slice(0, 120) : '',
+        slugs: Array.isArray(saved.slugs)
+          ? [...new Set(saved.slugs.filter(slug => typeof slug === 'string'))].slice(0, workspaceLimit)
+          : []
+      };
+    } catch {
+      workspaceState = { title: '', slugs: [] };
+    }
+    selectedSlugs = new Set(workspaceState.slugs);
+    workspaceTitle.value = workspaceState.title;
+  };
+
+  const persistWorkspace = () => {
+    workspaceState = {
+      title: workspaceTitle.value.trim().slice(0, 120),
+      slugs: [...selectedSlugs].slice(0, workspaceLimit)
+    };
+    try {
+      localStorage.setItem(workspaceStorageKey, JSON.stringify(workspaceState));
+    } catch {
+      setWorkspaceNotice('تعذر الحفظ الدائم في هذا المتصفح؛ ستبقى القائمة متاحة حتى إغلاق الصفحة.', 'error');
+    }
+  };
+
+  const selectedResources = () => [...selectedSlugs]
+    .map(slug => resources.find(resource => resource.slug === slug))
+    .filter(Boolean);
+
+  const setWorkspaceNotice = (message, tone = '') => {
+    workspaceNotice.textContent = message;
+    workspaceNotice.dataset.tone = tone;
+  };
+
+  const downloadText = (content, type, filename) => {
+    const blob = new Blob([content], { type });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = filename;
+    document.body.append(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(link.href), 500);
+  };
+
+  const csvCell = value => `"${String(value ?? '').replace(/"/g, '""')}"`;
+  const safeFilename = value => String(value || 'research-resources')
+    .trim()
+    .replace(/[\\/:*?"<>|]+/g, '-')
+    .replace(/\s+/g, '-')
+    .slice(0, 70) || 'research-resources';
+
+  const workspaceRequestUrl = items => {
+    const titles = items.map(item => item.title_ar).join('، ');
+    const params = new URLSearchParams({
+      service: 'تجهيز مجموعة بيانات محددة',
+      resource: titles,
+      source: items.map(item => item.slug).join(',')
+    });
+    const projectTitle = workspaceTitle.value.trim();
+    if (projectTitle) params.set('project', projectTitle);
+    return `index.html?${params.toString()}#request`;
+  };
 
   const text = (tag, value, className = '') => {
     const element = document.createElement(tag);
@@ -74,6 +161,18 @@
     return `index.html?${params.toString()}#request`;
   };
 
+  const createSaveButton = (resource, compact = false) => {
+    const saved = selectedSlugs.has(resource.slug);
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = compact ? 'resource-save-toggle compact' : 'resource-save-toggle';
+    button.setAttribute('aria-pressed', String(saved));
+    button.setAttribute('aria-label', saved ? `إزالة ${resource.title_ar} من ملف البحث` : `إضافة ${resource.title_ar} إلى ملف البحث`);
+    button.innerHTML = `<span aria-hidden="true">${saved ? '✓' : '+'}</span>${compact ? '' : (saved ? 'مضاف' : 'إضافة لملف البحث')}`;
+    button.addEventListener('click', () => toggleWorkspaceResource(resource));
+    return button;
+  };
+
   const createCard = resource => {
     const article = document.createElement('article');
     article.className = 'resource-card';
@@ -87,10 +186,13 @@
     inner.className = 'resource-card-inner';
     const top = document.createElement('div');
     top.className = 'resource-card-top';
-    top.append(
+    const labels = document.createElement('div');
+    labels.className = 'resource-card-labels';
+    labels.append(
       text('span', categoryLabels[resource.category] || 'بيانات جغرافية', 'resource-category'),
       text('span', `✓ تحقق ${resource.source_checked_at || 'حديثاً'}`, 'resource-verified')
     );
+    top.append(labels, createSaveButton(resource, true));
 
     const facts = document.createElement('div');
     facts.className = 'resource-facts';
@@ -140,6 +242,126 @@
     dialogBody.append(section);
   };
 
+  const createWorkspaceItem = resource => {
+    const item = document.createElement('article');
+    item.className = 'workspace-item';
+    item.dataset.category = resource.category;
+    const content = document.createElement('div');
+    content.append(
+      text('small', categoryLabels[resource.category] || 'بيانات جغرافية'),
+      text('h3', resource.title_ar),
+      text('p', `${resource.provider} · ${resource.spatial_resolution}`)
+    );
+    const remove = document.createElement('button');
+    remove.type = 'button';
+    remove.textContent = 'إزالة';
+    remove.setAttribute('aria-label', `إزالة ${resource.title_ar} من ملف البحث`);
+    remove.addEventListener('click', () => toggleWorkspaceResource(resource));
+    item.append(content, remove);
+    return item;
+  };
+
+  const updateResourceSaveButton = resource => {
+    if (activeResource?.slug !== resource.slug) return;
+    const saved = selectedSlugs.has(resource.slug);
+    resourceSaveButton.textContent = saved ? 'تمت الإضافة ✓' : 'أضف إلى ملف البحث';
+    resourceSaveButton.setAttribute('aria-pressed', String(saved));
+  };
+
+  const refreshWorkspace = () => {
+    const items = selectedResources();
+    workspaceCount.textContent = items.length;
+    workspaceList.replaceChildren(...items.map(createWorkspaceItem));
+    workspaceList.hidden = items.length === 0;
+    workspaceEmpty.hidden = items.length !== 0;
+    workspaceSummary.textContent = items.length
+      ? `${items.length} ${items.length === 1 ? 'مصدر مختار' : 'مصادر مختارة'} من أصل ${resources.length}`
+      : 'لم تختر أي مصدر بعد';
+
+    [workspaceClear, workspaceExportCsv, workspaceExportCitations, workspaceShare]
+      .forEach(control => { control.disabled = items.length === 0; });
+    workspaceRequest.setAttribute('aria-disabled', String(items.length === 0));
+    workspaceRequest.href = items.length ? workspaceRequestUrl(items) : 'index.html#request';
+    openWorkspaceButton.classList.toggle('has-items', items.length > 0);
+  };
+
+  const toggleWorkspaceResource = resource => {
+    if (selectedSlugs.has(resource.slug)) {
+      selectedSlugs.delete(resource.slug);
+      setWorkspaceNotice(`أُزيل «${resource.title_ar}» من ملف البحث.`);
+    } else {
+      if (selectedSlugs.size >= workspaceLimit) {
+        setWorkspaceNotice(`الحد الأقصى ${workspaceLimit} مصدراً في ملف البحث الواحد.`, 'error');
+        if (!workspaceDialog.open) workspaceDialog.showModal();
+        return;
+      }
+      selectedSlugs.add(resource.slug);
+      setWorkspaceNotice(`أُضيف «${resource.title_ar}» إلى ملف البحث.`, 'success');
+    }
+    persistWorkspace();
+    updateResourceSaveButton(resource);
+    render();
+    refreshWorkspace();
+  };
+
+  const exportWorkspaceCsv = () => {
+    const items = selectedResources();
+    if (!items.length) return;
+    const headers = ['الاسم العربي','الاسم الإنجليزي','التصنيف','الجهة','التغطية المكانية','التغطية الزمنية','الدقة المكانية','الصيغ','الترخيص','رابط المصدر','رابط الوثائق','الاقتباس المقترح'];
+    const rows = items.map(item => [
+      item.title_ar, item.title_en, categoryLabels[item.category] || item.category, item.provider,
+      item.coverage, item.temporal_coverage, item.spatial_resolution, item.formats.join(' | '),
+      item.license_name, item.access_url, item.metadata_url, item.citation_text
+    ]);
+    const csv = `\uFEFF${[headers, ...rows].map(row => row.map(csvCell).join(',')).join('\r\n')}`;
+    downloadText(csv, 'text/csv;charset=utf-8', `${safeFilename(workspaceTitle.value)}-${new Date().toISOString().slice(0, 10)}.csv`);
+    setWorkspaceNotice('تم تجهيز جدول CSV متوافق مع Excel.', 'success');
+  };
+
+  const exportWorkspaceCitations = () => {
+    const items = selectedResources();
+    if (!items.length) return;
+    const heading = workspaceTitle.value.trim() || 'قائمة مصادر البحث';
+    const lines = [heading, '='.repeat(Math.min(heading.length, 60)), `تاريخ التصدير: ${new Date().toLocaleDateString('ar-IQ')}`, ''];
+    items.forEach((item, index) => {
+      lines.push(`${index + 1}. ${item.citation_text}`, `   المصدر الرسمي: ${item.access_url}`, '');
+    });
+    lines.push('ملاحظة: راجع صيغة الاقتباس والترخيص في صفحة المنتج الرسمية قبل النشر الأكاديمي.');
+    downloadText(`\uFEFF${lines.join('\r\n')}`, 'text/plain;charset=utf-8', `${safeFilename(heading)}-citations.txt`);
+    setWorkspaceNotice('تم تجهيز ملف المراجع النصي.', 'success');
+  };
+
+  const copyWorkspaceLink = async () => {
+    const items = selectedResources();
+    if (!items.length) return;
+    const url = new URL(window.location.href);
+    url.search = '';
+    url.hash = 'catalog';
+    url.searchParams.set('collection', items.map(item => item.slug).join(','));
+    try {
+      await navigator.clipboard.writeText(url.toString());
+    } catch {
+      const area = document.createElement('textarea');
+      area.value = url.toString();
+      document.body.append(area);
+      area.select();
+      document.execCommand('copy');
+      area.remove();
+    }
+    setWorkspaceNotice('نُسخ رابط القائمة. لا يتضمن عنوان البحث أو أي بيانات شخصية.', 'success');
+  };
+
+  const importSharedCollection = () => {
+    const collection = new URLSearchParams(window.location.search).get('collection');
+    if (!collection) return;
+    const validSlugs = new Set(resources.map(resource => resource.slug));
+    const imported = collection.split(',').map(value => value.trim()).filter(slug => validSlugs.has(slug)).slice(0, workspaceLimit);
+    if (!imported.length) return;
+    selectedSlugs = new Set(imported);
+    persistWorkspace();
+    setWorkspaceNotice(`تم تحميل قائمة مشتركة تضم ${imported.length} مصدراً.`, 'success');
+  };
+
   const copyCitation = async (citation, button) => {
     try {
       await navigator.clipboard.writeText(citation);
@@ -157,11 +379,13 @@
   };
 
   const openResource = resource => {
+    activeResource = resource;
     dialogTitle.textContent = resource.title_ar;
     dialogEnglish.textContent = resource.title_en;
     dialogCategory.textContent = categoryLabels[resource.category] || 'بيانات جغرافية';
     accessLink.href = resource.access_url;
     requestLink.href = requestUrlFor(resource);
+    updateResourceSaveButton(resource);
     dialogBody.replaceChildren();
     dialogBody.append(text('p', resource.description_ar, 'resource-dialog-description'));
 
@@ -221,6 +445,7 @@
 
   const closeDialog = () => {
     dialog.close();
+    activeResource = null;
     const url = new URL(window.location.href);
     url.searchParams.delete('resource');
     history.replaceState({}, '', url);
@@ -288,10 +513,12 @@
     }
 
     resources = loaded.filter(item => item?.is_published !== false).map(normalizeResource);
+    importSharedCollection();
     heroCount.textContent = resources.length;
     sourceLabel.textContent = source;
     grid.setAttribute('aria-busy', 'false');
     render();
+    refreshWorkspace();
 
     const requestedSlug = new URLSearchParams(window.location.search).get('resource');
     const requested = resources.find(item => item.slug === requestedSlug);
@@ -312,7 +539,37 @@
   dialogClose.addEventListener('click', closeDialog);
   dialog.addEventListener('click', event => { if (event.target === dialog) closeDialog(); });
   dialog.addEventListener('cancel', event => { event.preventDefault(); closeDialog(); });
+  resourceSaveButton.addEventListener('click', () => { if (activeResource) toggleWorkspaceResource(activeResource); });
+  openWorkspaceButton.addEventListener('click', () => {
+    setWorkspaceNotice('');
+    refreshWorkspace();
+    workspaceDialog.showModal();
+    workspaceTitle.focus();
+  });
+  workspaceClose.addEventListener('click', () => workspaceDialog.close());
+  workspaceDialog.addEventListener('click', event => { if (event.target === workspaceDialog) workspaceDialog.close(); });
+  workspaceDialog.addEventListener('cancel', event => { event.preventDefault(); workspaceDialog.close(); });
+  workspaceTitle.addEventListener('input', () => {
+    persistWorkspace();
+    const items = selectedResources();
+    if (items.length) workspaceRequest.href = workspaceRequestUrl(items);
+  });
+  workspaceClear.addEventListener('click', () => {
+    if (!selectedSlugs.size || !window.confirm('هل تريد إفراغ ملف البحث من جميع المصادر المختارة؟')) return;
+    selectedSlugs.clear();
+    persistWorkspace();
+    render();
+    refreshWorkspace();
+    setWorkspaceNotice('أُفرغ ملف البحث. بقي عنوان المشروع محفوظاً.', 'success');
+  });
+  workspaceExportCsv.addEventListener('click', exportWorkspaceCsv);
+  workspaceExportCitations.addEventListener('click', exportWorkspaceCitations);
+  workspaceShare.addEventListener('click', copyWorkspaceLink);
+  workspaceRequest.addEventListener('click', event => {
+    if (!selectedSlugs.size) event.preventDefault();
+  });
 
+  loadWorkspaceState();
   loadResources().catch(() => {
     grid.setAttribute('aria-busy', 'false');
     grid.hidden = true;

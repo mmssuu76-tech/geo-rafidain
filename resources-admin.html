@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <meta name="theme-color" content="#123f38">
+  <title>إدارة مكتبة البيانات | جيو الرافدين</title>
+  <link rel="icon" href="assets/geo-rafidain.ico" sizes="any">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="resources-admin.css?v=20261001-library">
+</head>
+<body class="resources-admin-page">
+  <header class="admin-topbar">
+    <div class="container">
+      <a class="brand" href="dashboard.html"><span class="brand-mark" aria-hidden="true"><img src="assets/iraq-mark.svg" alt=""></span><span><strong>جيو الرافدين</strong><small>إدارة المكتبة البحثية</small></span></a>
+      <nav><a href="data-library.html">عرض المكتبة</a><a href="dashboard.html">لوحة المتابعة</a></nav>
+    </div>
+  </header>
+
+  <section class="admin-gate" id="admin-gate"><div><span>🔒</span><h1 id="gate-title">جارٍ التحقق من حساب المدير</h1><p id="gate-message">لحظة واحدة…</p><a class="button button-small" id="gate-link" href="security.html" hidden>إكمال التحقق الآمن</a></div></section>
+
+  <main class="admin-main container" id="admin-main" hidden>
+    <header class="admin-heading">
+      <div><p class="eyebrow dark"><span></span> محتوى بحثي موثوق</p><h1>إدارة مكتبة البيانات</h1><p>حدّث بيانات المصدر وتاريخ التحقق ثم انشره. لا تُرفع ملفات المصادر العامة إلى المنصة؛ يُحفظ الرابط الرسمي فقط.</p></div>
+      <button class="button" id="new-resource" type="button">+ إضافة مصدر</button>
+    </header>
+
+    <p class="admin-status" id="admin-status" role="status" aria-live="polite"></p>
+    <section class="admin-summary" aria-label="ملخص المكتبة"><article><small>جميع الموارد</small><strong id="all-count">0</strong></article><article><small>منشورة</small><strong id="published-count">0</strong></article><article><small>مسودات</small><strong id="draft-count">0</strong></article><article><small>مميزة</small><strong id="featured-count">0</strong></article></section>
+
+    <section class="resources-panel">
+      <div class="resources-toolbar"><label><span class="sr-only">بحث</span><input id="admin-search" type="search" placeholder="بحث في المصادر…"></label><select id="admin-state-filter" aria-label="تصفية حالة النشر"><option value="all">الكل</option><option value="published">منشورة</option><option value="draft">مسودات</option></select><button id="refresh-resources" type="button">تحديث</button></div>
+      <div class="admin-resource-list" id="admin-resource-list"></div>
+      <div class="admin-empty" id="admin-empty" hidden>لا توجد موارد مطابقة.</div>
+    </section>
+  </main>
+
+  <dialog class="resource-editor" id="resource-editor" aria-labelledby="editor-title">
+    <form id="resource-form">
+      <header><div><small id="editor-kicker">مورد جديد</small><h2 id="editor-title">بيانات المصدر</h2></div><button id="editor-close" type="button" aria-label="إغلاق">×</button></header>
+      <div class="editor-body">
+        <input type="hidden" name="id">
+        <div class="editor-grid">
+          <label>الاسم العربي<input name="title_ar" required maxlength="180"></label>
+          <label>الاسم الإنجليزي<input name="title_en" dir="ltr" required maxlength="180"></label>
+          <label>المعرّف المختصر بالإنجليزية<input name="slug" dir="ltr" required pattern="[a-z0-9]+(-[a-z0-9]+)*" placeholder="example-resource"></label>
+          <label>التصنيف<select name="category" required><option value="satellite">مرئيات فضائية</option><option value="climate">مناخ وأمطار</option><option value="terrain">تضاريس وارتفاعات</option><option value="soil">تربة</option><option value="water">مياه وهيدرولوجيا</option><option value="population">سكان</option><option value="agriculture">زراعة وري</option><option value="vector">بيانات متجهة</option></select></label>
+          <label class="wide">الجهة الناشرة<input name="provider" required maxlength="180"></label>
+          <label class="wide">الوصف العربي<textarea name="description_ar" required minlength="20" maxlength="1200" rows="4"></textarea></label>
+          <label>التغطية المكانية<input name="coverage" required maxlength="240"></label>
+          <label>التغطية الزمنية<input name="temporal_coverage" required maxlength="180"></label>
+          <label>الدقة المكانية<input name="spatial_resolution" required maxlength="180"></label>
+          <label>تاريخ التحقق<input name="source_checked_at" type="date" required></label>
+          <label class="wide">الاستخدامات البحثية <small>افصل بينها بفاصلة</small><input name="research_uses" required></label>
+          <label class="wide">الصيغ وطرق الوصول <small>افصل بينها بفاصلة</small><input name="formats" required></label>
+          <label class="wide">الكلمات المفتاحية <small>افصل بينها بفاصلة</small><input name="tags" required></label>
+          <label class="wide">رابط الوصول الرسمي<input name="access_url" type="url" dir="ltr" required pattern="https://.*"></label>
+          <label class="wide">رابط وثائق المنتج<input name="metadata_url" type="url" dir="ltr" required pattern="https://.*"></label>
+          <label class="wide">اسم الترخيص<input name="license_name" required maxlength="300"></label>
+          <label class="wide">رابط الترخيص<input name="license_url" type="url" dir="ltr" required pattern="https://.*"></label>
+          <label class="wide">صيغة الاقتباس المقترحة<textarea name="citation_text" dir="auto" required minlength="10" maxlength="1200" rows="4"></textarea></label>
+        </div>
+        <div class="editor-switches"><label><input name="featured" type="checkbox"> مصدر مميز</label><label><input name="is_published" type="checkbox"> منشور للعامة</label></div>
+        <p class="editor-note">تأكد من أن الروابط تبدأ بـ https وأن الاقتباس يطابق الإصدار المختار. إلغاء النشر يخفي المورد عن الزوار ولا يحذفه.</p>
+      </div>
+      <footer><button id="cancel-editor" type="button">إلغاء</button><button class="button" id="save-resource" type="submit">حفظ المورد</button></footer>
+    </form>
+  </dialog>
+
+  <script src="vendor/supabase-2.108.2.min.js"></script>
+  <script src="backend-config.js"></script>
+  <script src="backend.js?v=20261001-library"></script>
+  <script src="resources-admin.js?v=20261001-library"></script>
+</body>
+</html>

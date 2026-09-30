@@ -1,10 +1,12 @@
-const GEO_RAFIDAIN_CACHE = 'geo-rafidain-static-v13';
+const GEO_RAFIDAIN_CACHE = 'geo-rafidain-static-v14';
 const NETWORK_FIRST_EXTENSIONS = new Set(['.html', '.css', '.js', '.json', '.webmanifest']);
 
 const APP_SHELL = [
   './',
   './index.html',
   './dashboard.html',
+  './data-library.html',
+  './resources-admin.html',
   './privacy.html',
   './terms.html',
   './security.html',
@@ -15,9 +17,13 @@ const APP_SHELL = [
   './styles.css',
   './service-details.css',
   './dashboard.css',
+  './data-library.css',
+  './resources-admin.css',
   './legal.css',
   './script.js',
   './dashboard.js',
+  './data-library.js',
+  './resources-admin.js',
   './security.js',
   './study-map.js',
   './backend.js',
@@ -30,6 +36,7 @@ const APP_SHELL = [
   './assets/iraq-mark.svg',
   './assets/iraq-main.svg',
   './assets/iraq-governorates.geojson',
+  './data/resources.json',
   './vendor/supabase-2.108.2.min.js'
 ];
 

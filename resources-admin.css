@@ -1,0 +1,67 @@
+.resources-admin-page { min-height: 100vh; background: #f4f0e8; }
+.admin-topbar { color: white; background: var(--forest); box-shadow: 0 8px 30px rgba(0,0,0,.12); }
+.admin-topbar .container { min-height: 78px; display: flex; align-items: center; justify-content: space-between; gap: 30px; }
+.admin-topbar nav { display: flex; gap: 20px; color: rgba(255,255,255,.75); font-size: 11px; }
+.admin-topbar nav a:hover { color: var(--sand-light); }
+.admin-gate { min-height: calc(100vh - 78px); display: grid; place-items: center; padding: 30px; text-align: center; }
+.admin-gate > div { width: min(520px, 100%); padding: 42px; border: 1px solid #ded9cf; border-radius: 24px; background: var(--paper); box-shadow: var(--shadow); }
+.admin-gate span { font-size: 36px; }.admin-gate h1 { margin: 12px 0 5px; }.admin-gate p { color: var(--muted); }
+.admin-main { padding-top: 68px; padding-bottom: 100px; }
+.admin-heading { display: flex; justify-content: space-between; gap: 35px; align-items: end; margin-bottom: 30px; }
+.admin-heading h1 { margin: 0; font-size: clamp(33px, 4vw, 52px); line-height: 1.3; }
+.admin-heading > div > p:last-child { max-width: 720px; margin: 9px 0 0; color: var(--muted); font-size: 12px; }
+.admin-status { min-height: 28px; margin: 0 0 13px; color: var(--muted); font-size: 11px; }
+.admin-status.success { color: #287659; }.admin-status.error { color: #a34435; }
+.admin-summary { display: grid; grid-template-columns: repeat(4, 1fr); gap: 11px; margin-bottom: 18px; }
+.admin-summary article { padding: 18px; border: 1px solid #dfdbd1; border-radius: 16px 16px 16px 5px; background: var(--paper); }
+.admin-summary small, .admin-summary strong { display: block; }.admin-summary small { color: var(--muted); font-size: 9px; }.admin-summary strong { margin-top: 4px; color: var(--rust); font-size: 27px; }
+.resources-panel { overflow: hidden; border: 1px solid #ddd9cf; border-radius: 20px 20px 20px 6px; background: var(--paper); box-shadow: 0 18px 55px rgba(17,43,40,.07); }
+.resources-toolbar { display: grid; grid-template-columns: 1fr 190px auto; gap: 10px; padding: 15px; border-bottom: 1px solid #e4e1da; background: #faf7f0; }
+.resources-toolbar input, .resources-toolbar select { width: 100%; min-height: 43px; border: 1px solid #d7dcd7; border-radius: 9px; padding: 8px 11px; background: white; }
+.resources-toolbar button { border: 0; border-radius: 9px; padding: 8px 17px; color: white; background: var(--forest); cursor: pointer; }
+.admin-resource-list { display: grid; }
+.admin-resource-row { display: grid; grid-template-columns: minmax(260px, 1.4fr) minmax(170px, .7fr) minmax(150px, .55fr) auto; gap: 18px; align-items: center; padding: 18px 20px; border-bottom: 1px solid #ebe8e0; }
+.admin-resource-row:last-child { border-bottom: 0; }
+.admin-resource-row h2 { margin: 0 0 3px; font-size: 15px; }.admin-resource-row p { margin: 0; color: var(--muted); direction: ltr; text-align: right; font-size: 9px; }
+.admin-resource-row small { display: block; color: #87918c; font-size: 8px; }.admin-resource-row strong { display: block; margin-top: 3px; font-size: 10px; }
+.state-badges { display: flex; flex-wrap: wrap; gap: 5px; }
+.state-badges span { padding: 4px 7px; border-radius: 99px; font-size: 8px; font-weight: 800; }
+.state-published { color: #276a52; background: #e0f1e9; }.state-draft { color: #865542; background: #f4e3d8; }.state-featured { color: #815c1c; background: #f7eac8; }
+.admin-row-actions { display: flex; gap: 7px; }
+.admin-row-actions button { border: 1px solid #d8ddd8; border-radius: 8px; padding: 7px 10px; background: white; cursor: pointer; font-size: 9px; white-space: nowrap; }
+.admin-row-actions button:first-child { color: white; border-color: var(--forest); background: var(--forest); }
+.admin-empty { padding: 55px; color: var(--muted); text-align: center; }
+.resource-editor { width: min(920px, calc(100% - 28px)); max-height: calc(100vh - 28px); padding: 0; border: 0; border-radius: 23px 23px 23px 7px; background: var(--paper); box-shadow: 0 35px 100px rgba(0,0,0,.35); }
+.resource-editor::backdrop { background: rgba(4,25,22,.76); backdrop-filter: blur(5px); }
+.resource-editor form > header { display: flex; justify-content: space-between; gap: 20px; padding: 21px 25px; color: white; background: var(--forest); }
+.resource-editor header small { color: var(--sand-light); }.resource-editor header h2 { margin: 2px 0 0; }
+.resource-editor header button { width: 38px; height: 38px; border: 1px solid rgba(255,255,255,.2); border-radius: 9px; color: white; background: rgba(255,255,255,.06); cursor: pointer; font-size: 23px; }
+.editor-body { max-height: calc(100vh - 225px); overflow-y: auto; padding: 24px 25px; }
+.editor-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+.editor-grid label { display: grid; gap: 5px; color: #4f605a; font-size: 10px; font-weight: 700; }
+.editor-grid label small { color: #8a9590; font-size: 8px; font-weight: 400; }.editor-grid .wide { grid-column: 1 / -1; }
+.editor-grid input, .editor-grid select, .editor-grid textarea { width: 100%; border: 1px solid #d9ddd8; border-radius: 9px; padding: 9px 11px; color: var(--ink); background: white; outline: none; }
+.editor-grid textarea { resize: vertical; }.editor-grid input:focus, .editor-grid select:focus, .editor-grid textarea:focus { border-color: var(--rust); box-shadow: 0 0 0 3px rgba(184,103,63,.1); }
+.editor-switches { display: flex; gap: 24px; margin-top: 18px; padding: 14px; border-radius: 10px; background: #f4f1ea; }
+.editor-switches label { display: flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 700; }
+.editor-switches input { width: 17px; height: 17px; accent-color: var(--forest); }
+.editor-note { margin: 15px 0 0; color: var(--muted); font-size: 9px; }
+.resource-editor form > footer { display: flex; justify-content: flex-end; gap: 9px; padding: 16px 25px 20px; border-top: 1px solid #e4e2dc; }
+.resource-editor footer button { min-width: 125px; border: 1px solid #d8ddd8; border-radius: 10px; padding: 10px 16px; background: white; cursor: pointer; }
+.resource-editor footer .button { border: 0; background: var(--sand); }
+
+@media (max-width: 800px) {
+  .admin-heading { align-items: flex-start; flex-direction: column; }
+  .admin-summary { grid-template-columns: repeat(2, 1fr); }
+  .admin-resource-row { grid-template-columns: 1fr 1fr; }
+  .admin-resource-row > div:first-child { grid-column: 1 / -1; }
+  .admin-row-actions { justify-content: flex-end; }
+}
+@media (max-width: 600px) {
+  .admin-topbar .container { align-items: flex-start; flex-direction: column; padding-block: 14px; }
+  .resources-toolbar, .editor-grid { grid-template-columns: 1fr; }
+  .editor-grid .wide { grid-column: auto; }
+  .admin-resource-row { grid-template-columns: 1fr; }
+  .admin-resource-row > div:first-child { grid-column: auto; }
+  .admin-row-actions { justify-content: flex-start; }
+}

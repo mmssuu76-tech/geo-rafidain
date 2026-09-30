@@ -444,6 +444,49 @@
     return data.signedUrl;
   };
 
+  const listPublishedResources = async () => {
+    assertReady();
+    const { data, error } = await client
+      .from('geo_resources')
+      .select('id,slug,title_ar,title_en,category,provider,description_ar,research_uses,coverage,temporal_coverage,spatial_resolution,formats,license_name,license_url,access_url,metadata_url,citation_text,tags,featured,is_published,source_checked_at,updated_at')
+      .eq('is_published', true)
+      .order('featured', { ascending: false })
+      .order('title_ar', { ascending: true });
+    if (error) throw error;
+    return data || [];
+  };
+
+  const listAdminResources = async () => {
+    await requireUser();
+    const { data, error } = await client
+      .from('geo_resources')
+      .select('*')
+      .order('is_published', { ascending: false })
+      .order('featured', { ascending: false })
+      .order('title_ar', { ascending: true });
+    if (error) throw error;
+    return data || [];
+  };
+
+  const adminUpsertResource = async resource => {
+    await requireUser();
+    const { data, error } = await client.rpc('admin_upsert_geo_resource', {
+      p_resource: resource
+    });
+    if (error) throw error;
+    return data;
+  };
+
+  const adminSetResourcePublished = async (resourceId, published) => {
+    await requireUser();
+    const { data, error } = await client.rpc('admin_set_geo_resource_published', {
+      p_resource_id: resourceId,
+      p_published: Boolean(published)
+    });
+    if (error) throw error;
+    return data;
+  };
+
   const getMfaAssurance = async () => {
     assertReady();
     const { data, error } = await client.auth.mfa.getAuthenticatorAssuranceLevel();
@@ -519,6 +562,10 @@
     deleteRequest,
     createFileLink,
     createDeliverableLink,
+    listPublishedResources,
+    listAdminResources,
+    adminUpsertResource,
+    adminSetResourcePublished,
     getMfaAssurance,
     listMfaFactors,
     enrollTotp,

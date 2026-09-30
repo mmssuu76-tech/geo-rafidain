@@ -126,12 +126,20 @@
   };
 
   const requestedFromPage = new URLSearchParams(window.location.search).get('service');
+  const resourceFromPage = new URLSearchParams(window.location.search).get('resource');
   if (requestedFromPage && serviceSelect) {
     const requestedOption = [...serviceSelect.options].find(item => item.text === requestedFromPage || item.value === requestedFromPage);
     if (requestedOption) {
       serviceSelect.value = requestedOption.value || requestedOption.text;
       suggestIntakeDefaults(requestedFromPage);
     }
+  }
+  if (resourceFromPage && description) {
+    const resourceNote = `أرغب في تجهيز بيانات: ${resourceFromPage}. يرجى مساعدتي في تحديد الإصدار والفترة ومنطقة الدراسة المناسبة. `;
+    if (!description.value.trim()) description.value = resourceNote;
+    charCount.textContent = description.value.length;
+    setSelectByText('dataType', 'بيانات مكانية أخرى');
+    setSelectByText('outputType', 'بيانات مكانية مجهزة للاستخدام');
   }
 
   document.querySelectorAll('.service-select').forEach(button => {

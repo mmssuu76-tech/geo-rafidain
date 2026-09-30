@@ -1008,6 +1008,7 @@
 
       if (profile.role === 'admin') {
         document.querySelector('#security-link').hidden = false;
+        document.querySelector('#resources-admin-link').hidden = false;
         const assurance = await backend.getMfaAssurance();
         if (assurance.nextLevel === 'aal2' && assurance.currentLevel !== 'aal2') {
           showGate(

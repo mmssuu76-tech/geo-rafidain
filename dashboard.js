@@ -16,10 +16,15 @@
   const dialogProgress = document.querySelector('#dialog-progress');
   const dialogPrice = document.querySelector('#dialog-price');
   const dialogDelivery = document.querySelector('#dialog-delivery');
+  const dialogQuoteScope = document.querySelector('#dialog-quote-scope');
+  const quoteScopeCount = document.querySelector('#quote-scope-count');
   const dialogAdminMessage = document.querySelector('#dialog-admin-message');
   const adminMessageCount = document.querySelector('#admin-message-count');
+  const quoteAdminState = document.querySelector('#quote-admin-state');
+  const sendQuoteButton = document.querySelector('#send-quote');
   const workflowMigrationNote = document.querySelector('#workflow-migration-note');
   const workflowExtraFields = [...document.querySelectorAll('.workflow-extra-field')];
+  const quoteExtraFields = [...document.querySelectorAll('.quote-extra-field')];
   const adminControls = document.querySelector('#admin-dialog-controls');
   const exportButton = document.querySelector('#export-button');
   const exportCsvButton = document.querySelector('#export-csv-button');
@@ -98,6 +103,22 @@
     completed: 'status-done'
   };
 
+  const quoteStatusLabels = {
+    not_sent: 'لم يُرسل',
+    pending: 'بانتظار العميل',
+    accepted: 'مقبول',
+    rejected: 'مرفوض',
+    withdrawn: 'مسحوب'
+  };
+
+  const quoteStatusClasses = {
+    not_sent: 'quote-none',
+    pending: 'quote-pending',
+    accepted: 'quote-accepted',
+    rejected: 'quote-rejected',
+    withdrawn: 'quote-withdrawn'
+  };
+
   const journeySteps = [
     { key: 'new', label: 'تم الاستلام', text: 'وصل الطلب إلى لوحة المتابعة وحُفظ داخل حسابك.' },
     { key: 'reviewing', label: 'قيد المراجعة', text: 'تجري قراءة الوصف والبيانات لتحديد المنهج المناسب.' },
@@ -171,6 +192,24 @@
     ? 'لم يحدد بعد'
     : `${new Intl.NumberFormat('ar-IQ').format(Number(value))} د.ع.`;
 
+  const quoteStatus = item => item.quote_status || 'not_sent';
+
+  const quoteBadge = item => {
+    const status = quoteStatus(item);
+    return `<span class="quote-pill ${quoteStatusClasses[status] || 'quote-none'}">${quoteStatusLabels[status] || safe(status)}</span>`;
+  };
+
+  const quoteNextAction = item => {
+    if (quoteStatus(item) === 'pending') {
+      return profile?.role === 'admin'
+        ? 'أُرسل عرض السعر وينتظر قبول العميل أو رفضه.'
+        : 'راجع عرض السعر داخل تفاصيل الطلب ثم اختر القبول أو الرفض.';
+    }
+    if (quoteStatus(item) === 'accepted') return 'تم قبول عرض السعر ويمكن متابعة المشروع وفق النطاق والموعد المتفق عليهما.';
+    if (quoteStatus(item) === 'rejected') return 'تم رفض العرض؛ يمكن للمدير مراجعته وإرسال عرض جديد عند الحاجة.';
+    return null;
+  };
+
   const journeyStageIndex = status => {
     const index = journeySteps.findIndex(step => step.key === status);
     return index >= 0 ? index : 0;
@@ -211,7 +250,7 @@
       <article><small>الخدمة</small><strong>${safe(item.service)}</strong></article>
       <article><small>الحالة الحالية</small><strong><span class="status-pill ${statusClasses[item.status] || 'status-new'}">${statusLabels[item.status] || safe(item.status)}</span></strong></article>
       <article><small>التقدم</small><strong>${progressValue(item.progress_percent)}%</strong></article>
-      <article class="wide"><small>الخطوة القادمة</small><p>${safe(copy.next)}</p></article>
+      <article class="wide"><small>الخطوة القادمة</small><p>${safe(quoteNextAction(item) || copy.next)}</p></article>
       <button class="journey-open" type="button" data-id="${safe(item.id)}">فتح تفاصيل الطلب</button>`;
   };
 
@@ -221,8 +260,62 @@
       <div class="detail-field full journey-detail">
         <small>مسار المتابعة</small>
         ${journeyStepsMarkup(item)}
-        <p>${safe(copy.next)}</p>
+        <p>${safe(quoteNextAction(item) || copy.next)}</p>
       </div>`;
+  };
+
+  const quoteCardMarkup = item => {
+    if (item.quote_available === false) return '';
+    const status = quoteStatus(item);
+    const hasQuote = status !== 'not_sent' && item.quoted_price_iqd !== null && item.quoted_price_iqd !== undefined;
+
+    if (!hasQuote) {
+      return `
+        <section class="detail-field full quote-card quote-card-empty">
+          <div class="quote-card-heading"><div><small>عرض السعر</small><h3>لم يصدر عرض سعر بعد</h3></div>${quoteBadge(item)}</div>
+          <p>${profile?.role === 'admin' ? 'أكمل السعر والموعد ونطاق العمل من قسم الإدارة ثم أرسل العرض.' : 'سيظهر هنا السعر ونطاق العمل والموعد بعد انتهاء المراجعة الأولية.'}</p>
+        </section>`;
+    }
+
+    const clientActions = profile?.role !== 'admin' && status === 'pending'
+      ? `<div class="quote-client-response">
+          <label for="quote-client-note">ملاحظة اختيارية قبل القرار</label>
+          <textarea id="quote-client-note" rows="3" maxlength="1000" placeholder="اكتب استفسارك أو سبب الرفض عند الحاجة..."></textarea>
+          <small><span id="quote-client-note-count">0</span>/1000</small>
+          <div><button class="quote-decision reject" type="button" data-id="${safe(item.id)}" data-decision="rejected">رفض العرض</button><button class="quote-decision accept" type="button" data-id="${safe(item.id)}" data-decision="accepted">قبول العرض</button></div>
+          <p>القرار يُحفظ في حسابك مع التاريخ. راجع النطاق والسعر والموعد قبل التأكيد.</p>
+        </div>`
+      : '';
+
+    return `
+      <section class="detail-field full quote-card ${quoteStatusClasses[status] || ''}">
+        <div class="quote-card-heading"><div><small>عرض السعر الرسمي</small><h3>${safe(item.service)}</h3></div>${quoteBadge(item)}</div>
+        <div class="quote-summary-grid">
+          <article><small>السعر</small><strong>${priceLabel(item.quoted_price_iqd)}</strong></article>
+          <article><small>التسليم المتوقع</small><strong>${item.expected_delivery_date ? dateLabel(item.expected_delivery_date) : 'لم يحدد'}</strong></article>
+          <article><small>تاريخ الإرسال</small><strong>${item.quote_sent_at ? dateLabel(item.quote_sent_at) : '—'}</strong></article>
+        </div>
+        <div class="quote-scope"><small>نطاق العمل المشمول</small><p>${safe(item.quote_scope || 'لم يُكتب نطاق العمل.')}</p></div>
+        ${item.quote_client_note ? `<div class="quote-client-note"><small>ملاحظة العميل</small><p>${safe(item.quote_client_note)}</p></div>` : ''}
+        ${item.quote_decided_at ? `<p class="quote-decision-date">سُجل القرار في ${dateLabel(item.quote_decided_at)}.</p>` : ''}
+        ${clientActions}
+      </section>`;
+  };
+
+  const updateQuoteAdminControls = item => {
+    if (profile?.role !== 'admin') return;
+    const available = item.quote_available !== false;
+    const status = quoteStatus(item);
+    quoteExtraFields.forEach(field => { field.hidden = !available; });
+    sendQuoteButton.hidden = !available;
+    sendQuoteButton.disabled = status === 'accepted';
+    sendQuoteButton.textContent = status === 'pending' ? 'تحديث وإعادة إرسال العرض'
+      : status === 'rejected' ? 'تعديل وإعادة إرسال العرض'
+        : status === 'accepted' ? 'تم قبول العرض' : 'إرسال عرض السعر';
+    quoteAdminState.hidden = !available;
+    if (available) {
+      quoteAdminState.innerHTML = `<span>حالة العرض الحالية</span>${quoteBadge(item)}${item.quote_decided_at ? `<small>آخر قرار: ${dateLabel(item.quote_decided_at)}</small>` : ''}`;
+    }
   };
 
   const fileSize = bytes => {
@@ -340,6 +433,7 @@
         <td class="client-cell"><strong>${safe(item.name)}</strong><span>${safe(item.service)}</span></td>
         <td class="area-cell">${safe(item.study_area || 'غير محددة')}</td>
         <td><div class="table-progress"><span style="width:${progressValue(item.progress_percent)}%"></span><small>${progressValue(item.progress_percent)}%</small></div></td>
+        <td>${item.quote_available === false ? '<span class="quote-pill quote-none">غير مفعّل</span>' : quoteBadge(item)}</td>
         <td class="date-cell"><strong>${dateLabel(item.created_at)}</strong><span>${safe(deliverySummary(item))}</span></td>
         <td><span class="status-pill ${statusClasses[item.status] || 'status-new'}">${statusLabels[item.status] || safe(item.status)}</span></td>
         <td><button class="view-button" type="button" data-id="${safe(item.id)}">التفاصيل</button></td>
@@ -361,10 +455,13 @@
     dialogProgress.value = progressValue(item.progress_percent);
     dialogPrice.value = item.quoted_price_iqd ?? '';
     dialogDelivery.value = item.expected_delivery_date || '';
+    dialogQuoteScope.value = item.quote_scope || '';
+    quoteScopeCount.textContent = dialogQuoteScope.value.length;
     dialogAdminMessage.value = item.admin_message || '';
     adminMessageCount.textContent = dialogAdminMessage.value.length;
     workflowExtraFields.forEach(field => { field.hidden = !workflowAvailable; });
-    workflowMigrationNote.hidden = workflowAvailable;
+    workflowMigrationNote.hidden = workflowAvailable && item.quote_available !== false;
+    updateQuoteAdminControls(item);
 
     const files = item.request_files?.length
       ? `<div class="file-list">${item.request_files.map(file => `
@@ -379,14 +476,13 @@
       <div class="detail-field"><small>منطقة الدراسة</small><strong>${safe(item.study_area || 'غير محددة')}</strong></div>
       <div class="detail-field"><small>الموعد المطلوب</small><strong>${item.deadline ? dateLabel(item.deadline) : 'غير محدد'}</strong></div>
       ${journeyDetailMarkup(item)}
+      ${quoteCardMarkup(item)}
       ${workflowAvailable ? `
-      <div class="detail-field"><small>السعر المقترح</small><strong>${priceLabel(item.quoted_price_iqd)}</strong></div>
-      <div class="detail-field"><small>التسليم المتوقع</small><strong>${item.expected_delivery_date ? dateLabel(item.expected_delivery_date) : 'لم يحدد بعد'}</strong></div>
       <div class="detail-field full progress-detail"><div><small>نسبة الإنجاز</small><strong>${progressValue(item.progress_percent)}%</strong></div><span><i style="width:${progressValue(item.progress_percent)}%"></i></span></div>
       <div class="detail-field full"><small>رسالة المتابعة</small><strong class="detail-description admin-message">${safe(item.admin_message || 'لا توجد رسالة متابعة بعد.')}</strong></div>` : ''}
       <div class="detail-field full"><small>وصف المشروع</small><strong class="detail-description">${safe(item.description)}</strong></div>
       <div class="detail-field full"><small>الملفات الخاصة</small>${files}</div>`;
-    dialog.showModal();
+    if (!dialog.open) dialog.showModal();
   };
 
   const loadRequests = async (announce = false) => {
@@ -420,6 +516,27 @@
   });
 
   document.querySelector('#dialog-content').addEventListener('click', async event => {
+    const decisionButton = event.target.closest('.quote-decision');
+    if (decisionButton) {
+      const decision = decisionButton.dataset.decision;
+      const decisionLabel = decision === 'accepted' ? 'قبول' : 'رفض';
+      if (!window.confirm(`هل تؤكد ${decisionLabel} عرض السعر؟ سيُحفظ القرار في حسابك.`)) return;
+      const buttons = [...document.querySelectorAll('.quote-decision')];
+      buttons.forEach(button => { button.disabled = true; });
+      try {
+        const note = document.querySelector('#quote-client-note')?.value || '';
+        const updated = await backend.respondToServiceQuote(decisionButton.dataset.id, decision, note);
+        requests = requests.map(item => item.id === decisionButton.dataset.id ? { ...item, ...updated } : item);
+        render();
+        showRequest(decisionButton.dataset.id);
+        showNotice(`تم ${decisionLabel} عرض السعر وحفظ القرار.`);
+      } catch {
+        showNotice('تعذر حفظ القرار. حدّث الطلب وتأكد أن العرض ما زال بانتظار ردك.', 'error');
+        buttons.forEach(button => { button.disabled = false; });
+      }
+      return;
+    }
+
     const button = event.target.closest('.file-open');
     if (!button) return;
     button.disabled = true;
@@ -431,6 +548,12 @@
     } finally {
       button.disabled = false;
     }
+  });
+
+  document.querySelector('#dialog-content').addEventListener('input', event => {
+    if (event.target.id !== 'quote-client-note') return;
+    const counter = document.querySelector('#quote-client-note-count');
+    if (counter) counter.textContent = event.target.value.length;
   });
 
   search.addEventListener('input', render);
@@ -454,15 +577,18 @@
     adminMessageCount.textContent = dialogAdminMessage.value.length;
   });
 
+  dialogQuoteScope.addEventListener('input', () => {
+    quoteScopeCount.textContent = dialogQuoteScope.value.length;
+  });
+
   document.querySelector('#save-status').addEventListener('click', async () => {
     if (profile?.role !== 'admin' || !selectedId) return;
     const button = document.querySelector('#save-status');
     const selected = requests.find(item => item.id === selectedId);
     const workflowAvailable = selected?.workflow_available !== false;
-    if (workflowAvailable && (!dialogProgress.checkValidity() || !dialogPrice.checkValidity() || !dialogDelivery.checkValidity())) {
+    if (workflowAvailable && (!dialogProgress.checkValidity() || !dialogAdminMessage.checkValidity())) {
       dialogProgress.reportValidity();
-      dialogPrice.reportValidity();
-      dialogDelivery.reportValidity();
+      dialogAdminMessage.reportValidity();
       return;
     }
     button.disabled = true;
@@ -471,8 +597,6 @@
         ? await backend.updateRequestWorkflow(selectedId, {
             status: dialogStatus.value,
             progressPercent: dialogProgress.value,
-            quotedPriceIqd: dialogPrice.value,
-            expectedDeliveryDate: dialogDelivery.value,
             adminMessage: dialogAdminMessage.value
           })
         : await backend.updateRequestStatus(selectedId, dialogStatus.value);
@@ -485,6 +609,48 @@
       showPanelError('تعذر حفظ التحديث. تحقق من القيم وصلاحية جلسة المدير ثم حاول مجدداً.');
     } finally {
       button.disabled = false;
+    }
+  });
+
+  sendQuoteButton.addEventListener('click', async () => {
+    if (profile?.role !== 'admin' || !selectedId) return;
+    const selected = requests.find(item => item.id === selectedId);
+    if (!selected || selected.quote_available === false) return;
+    if (!dialogPrice.checkValidity() || !dialogDelivery.checkValidity() || !dialogQuoteScope.checkValidity() || !dialogAdminMessage.checkValidity()) {
+      dialogPrice.reportValidity();
+      dialogDelivery.reportValidity();
+      dialogQuoteScope.reportValidity();
+      dialogAdminMessage.reportValidity();
+      return;
+    }
+    const deliveryDate = new Date(`${dialogDelivery.value}T00:00:00`);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    if (!dialogDelivery.value || deliveryDate < today) {
+      showNotice('اختر موعد تسليم اليوم أو بعده قبل إرسال العرض.', 'error');
+      return;
+    }
+    const actionText = quoteStatus(selected) === 'not_sent' ? 'إرسال' : 'إعادة إرسال';
+    if (!window.confirm(`${actionText} عرض السعر بقيمة ${priceLabel(dialogPrice.value)} للعميل؟`)) return;
+
+    sendQuoteButton.disabled = true;
+    const originalLabel = sendQuoteButton.textContent;
+    sendQuoteButton.textContent = 'جارٍ إرسال العرض...';
+    try {
+      const updated = await backend.sendServiceQuote(selectedId, {
+        quotedPriceIqd: dialogPrice.value,
+        expectedDeliveryDate: dialogDelivery.value,
+        quoteScope: dialogQuoteScope.value,
+        adminMessage: dialogAdminMessage.value
+      });
+      requests = requests.map(item => item.id === selectedId ? { ...item, ...updated, quote_available: true, workflow_available: true } : item);
+      render();
+      showRequest(selectedId);
+      showNotice('تم إرسال عرض السعر للعميل وحفظ نسخة مؤرخة منه.');
+    } catch {
+      showNotice('تعذر إرسال العرض. تحقق من السعر والموعد ونطاق العمل وصلاحية جلسة المدير.', 'error');
+      sendQuoteButton.disabled = false;
+      sendQuoteButton.textContent = originalLabel;
     }
   });
 
@@ -522,11 +688,12 @@
 
   exportCsvButton.addEventListener('click', () => {
     if (profile?.role !== 'admin') return;
-    const headers = ['رقم الطلب', 'الاسم', 'التواصل', 'الخدمة', 'منطقة الدراسة', 'الوصف', 'الحالة', 'الإنجاز %', 'السعر د.ع.', 'التسليم المتوقع', 'تاريخ الإنشاء'];
+    const headers = ['رقم الطلب', 'الاسم', 'التواصل', 'الخدمة', 'منطقة الدراسة', 'الوصف', 'الحالة', 'الإنجاز %', 'السعر د.ع.', 'التسليم المتوقع', 'حالة العرض', 'نطاق العرض', 'قرار العميل', 'تاريخ الإنشاء'];
     const rows = requests.map(item => [
       item.request_number, item.name, item.contact, item.service, item.study_area || '', item.description,
       statusLabels[item.status] || item.status, progressValue(item.progress_percent), item.quoted_price_iqd ?? '',
-      item.expected_delivery_date || '', item.created_at
+      item.expected_delivery_date || '', quoteStatusLabels[quoteStatus(item)] || quoteStatus(item), item.quote_scope || '',
+      item.quote_client_note || '', item.created_at
     ]);
     const csv = `\uFEFF${[headers, ...rows].map(row => row.map(csvCell).join(',')).join('\r\n')}`;
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });

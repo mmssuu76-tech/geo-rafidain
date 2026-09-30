@@ -9,7 +9,7 @@
   <link rel="apple-touch-icon" href="assets/geo-rafidain-icon.png">
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="stylesheet" href="styles.css">
-  <link rel="stylesheet" href="dashboard.css?v=20260624-journey">
+  <link rel="stylesheet" href="dashboard.css?v=20260930-quotes">
 </head>
 <body class="dashboard-page">
   <aside class="dashboard-sidebar" aria-label="القائمة الجانبية">
@@ -57,7 +57,7 @@
 
       <div class="request-table-wrap">
         <table class="request-table">
-          <thead><tr><th>رقم الطلب</th><th>العميل والخدمة</th><th>منطقة الدراسة</th><th>التقدم</th><th>التاريخ</th><th>الحالة</th><th><span class="sr-only">إجراءات</span></th></tr></thead>
+          <thead><tr><th>رقم الطلب</th><th>العميل والخدمة</th><th>منطقة الدراسة</th><th>التقدم</th><th>عرض السعر</th><th>التاريخ</th><th>الحالة</th><th><span class="sr-only">إجراءات</span></th></tr></thead>
           <tbody id="request-list"></tbody>
         </table>
         <div class="empty-state" id="empty-state">
@@ -75,20 +75,22 @@
         <div class="admin-workflow-fields">
           <label>حالة المشروع<select id="dialog-status"><option value="new">جديد</option><option value="reviewing">قيد المراجعة</option><option value="in_progress">قيد التنفيذ</option><option value="completed">مكتمل</option></select></label>
           <label class="workflow-extra-field">نسبة الإنجاز<input id="dialog-progress" type="number" inputmode="numeric" min="0" max="100" step="1" value="0"><span>%</span></label>
-          <label class="workflow-extra-field">السعر المقترح (د.ع.)<input id="dialog-price" type="number" inputmode="numeric" min="0" max="1000000000" step="1000" placeholder="مثال: 250000"></label>
-          <label class="workflow-extra-field">التسليم المتوقع<input id="dialog-delivery" type="date"></label>
+          <label class="workflow-extra-field quote-extra-field">السعر المقترح (د.ع.)<input id="dialog-price" type="number" inputmode="numeric" min="1000" max="1000000000" step="1000" placeholder="مثال: 250000"></label>
+          <label class="workflow-extra-field quote-extra-field">التسليم المتوقع<input id="dialog-delivery" type="date"></label>
+          <label class="workflow-extra-field quote-extra-field full">نطاق عرض السعر<textarea id="dialog-quote-scope" rows="4" minlength="20" maxlength="4000" placeholder="حدّد المخرجات المشمولة، عدد الخرائط أو التحليلات، صيغ التسليم، وعدد المراجعات..."></textarea><small><span id="quote-scope-count">0</span>/4000</small></label>
           <label class="workflow-extra-field full">رسالة للعميل<textarea id="dialog-admin-message" rows="3" maxlength="2000" placeholder="مثال: تم استلام البيانات وبدأت مرحلة المعالجة..."></textarea><small><span id="admin-message-count">0</span>/2000</small></label>
         </div>
-        <p class="workflow-migration-note" id="workflow-migration-note" hidden>حقول المتابعة المتقدمة تحتاج إلى تطبيق تحديث قاعدة البيانات.</p>
-        <div class="dialog-actions"><button class="delete-button" id="delete-request" type="button">حذف الطلب</button><button class="button button-small" id="save-status" type="button">حفظ التحديث</button></div>
+        <p class="workflow-migration-note" id="workflow-migration-note" hidden>بعض حقول المتابعة تحتاج إلى تطبيق تحديث قاعدة البيانات.</p>
+        <div class="quote-admin-state" id="quote-admin-state" hidden></div>
+        <div class="dialog-actions"><button class="delete-button" id="delete-request" type="button">حذف الطلب</button><div><button class="secondary-action" id="send-quote" type="button">إرسال عرض السعر</button><button class="button button-small" id="save-status" type="button">حفظ المتابعة</button></div></div>
       </div>
     </form>
   </dialog>
 
   <script src="vendor/supabase-2.108.2.min.js"></script>
   <script src="backend-config.js"></script>
-  <script src="backend.js"></script>
-  <script src="dashboard.js?v=20260624-journey"></script>
+  <script src="backend.js?v=20260930-quotes"></script>
+  <script src="dashboard.js?v=20260930-quotes"></script>
   <script src="pwa.js"></script>
 </body>
 </html>

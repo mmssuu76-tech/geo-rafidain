@@ -29,6 +29,11 @@ create table if not exists public.service_requests (
   progress_percent smallint not null default 0 check (progress_percent between 0 and 100),
   expected_delivery_date date,
   admin_message text check (admin_message is null or char_length(admin_message) <= 2000),
+  quote_status text not null default 'not_sent' check (quote_status in ('not_sent', 'pending', 'accepted', 'rejected', 'withdrawn')),
+  quote_scope text check (quote_scope is null or char_length(quote_scope) between 20 and 4000),
+  quote_sent_at timestamptz,
+  quote_decided_at timestamptz,
+  quote_client_note text check (quote_client_note is null or char_length(quote_client_note) <= 1000),
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );

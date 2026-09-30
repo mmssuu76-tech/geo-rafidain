@@ -10,8 +10,9 @@
 4. انسخ محتوى [`supabase/schema.sql`](supabase/schema.sql) بالكامل وشغّله.
 5. بعد نجاحه انسخ محتوى [`supabase/security-hardening.sql`](supabase/security-hardening.sql) وشغّله مرة واحدة.
 6. شغّل [`supabase/admin-workflow.sql`](supabase/admin-workflow.sql) لإضافة السعر ونسبة الإنجاز وموعد التسليم ورسالة المتابعة.
-7. شغّل [`supabase/gis-file-formats.sql`](supabase/gis-file-formats.sql) لتفعيل GeoJSON وGeoPackage وملف ZIP لمكونات الشيب فايل.
-8. شغّل [`supabase/function-permissions-hardening.sql`](supabase/function-permissions-hardening.sql) أخيراً لنقل دوال الأمان الداخلية خارج مخطط API وإغلاق استدعائها المباشر.
+7. شغّل [`supabase/quote-workflow.sql`](supabase/quote-workflow.sql) لتفعيل إرسال عرض السعر وقبوله أو رفضه مع سجل قرارات مؤرخ.
+8. شغّل [`supabase/gis-file-formats.sql`](supabase/gis-file-formats.sql) لتفعيل GeoJSON وGeoPackage وملف ZIP لمكونات الشيب فايل.
+9. شغّل [`supabase/function-permissions-hardening.sql`](supabase/function-permissions-hardening.sql) أخيراً لنقل دوال الأمان الداخلية خارج مخطط API وإغلاق استدعائها المباشر.
 
 ينشئ الملف الجداول وسياسات RLS وحاوية ملفات خاصة بحجم أقصى 10MB للملف.
 
@@ -73,6 +74,7 @@ where email = 'your-email@example.com';
 - أرسل طلباً بحساب عادي وتأكد أنه لا يرى إلا طلبه.
 - ادخل بحساب المدير وتأكد أنك ترى جميع الطلبات وتستطيع تغيير الحالة.
 - حدّث السعر ونسبة الإنجاز ورسالة المتابعة، ثم افتح الطلب بحساب العميل وتأكد من ظهورها للقراءة فقط.
+- أرسل عرض سعر يتضمن السعر والموعد والنطاق، ثم اقبله أو ارفضه بحساب العميل وتأكد من حفظ القرار وعدم إمكان الرد مرتين على العرض نفسه.
 - فعّل TOTP، ثم تحقق أن لوحة المدير تطلب الرمز في جلسة جديدة.
 - حاول إنشاء أكثر من خمسة طلبات في ساعة واحدة وتأكد أن قاعدة البيانات ترفض السادس.
 - تحقق من `admin_retention_queue` قبل تفعيل مهمة الحذف الموصوفة في [`RETENTION.md`](RETENTION.md).

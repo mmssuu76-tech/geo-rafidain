@@ -95,3 +95,58 @@
 .dashboard-notice.success { color: #1f6a59; background: #e2f1ec; border-color: #b9dacf; }
 .dashboard-notice.error { color: #9d4134; background: #f8e9e5; border-color: #e8c3ba; }
 .last-refresh { display: block; margin-top: 5px; color: #83908b; font-size: 8px; }
+
+/* Secure quotation workflow */
+.request-dialog { width: min(760px, calc(100% - 30px)); }
+.quote-pill { display: inline-flex; align-items: center; justify-content: center; gap: 5px; padding: 5px 9px; border-radius: 999px; font-size: 8px; font-weight: 800; white-space: nowrap; }
+.quote-none { color: #65706b; background: #edf0ee; }
+.quote-pending { color: #8a5a0c; background: #fff0ce; }
+.quote-accepted { color: #17634f; background: #dcefe8; }
+.quote-rejected { color: #97483a; background: #f6e3df; }
+.quote-withdrawn { color: #6e625b; background: #ebe7e4; }
+.quote-card { grid-column: 1 / -1; position: relative; overflow: hidden; padding: 18px; border: 1px solid #ded9c9; border-radius: 17px 17px 17px 5px; background: linear-gradient(145deg, #fffdf7 0%, #f7f2e7 100%); }
+.quote-card::after { content: ""; position: absolute; left: -45px; bottom: -55px; width: 135px; height: 135px; border-radius: 50%; background: rgba(188,135,57,.08); pointer-events: none; }
+.quote-card.quote-accepted { border-color: #b9d9cf; background: linear-gradient(145deg, #f8fffc 0%, #e9f5f1 100%); }
+.quote-card.quote-rejected { border-color: #e5c6c0; background: linear-gradient(145deg, #fffafa 0%, #f8eae7 100%); }
+.quote-card-heading { position: relative; z-index: 1; display: flex; align-items: flex-start; justify-content: space-between; gap: 15px; margin-bottom: 15px; }
+.quote-card-heading small, .quote-card-heading h3 { display: block; margin: 0; }
+.quote-card-heading small { color: var(--rust); font-size: 8px; font-weight: 900; }
+.quote-card-heading h3 { margin-top: 4px; color: var(--ink); font-size: 16px; }
+.quote-summary-grid { position: relative; z-index: 1; display: grid; grid-template-columns: repeat(3, 1fr); gap: 9px; }
+.quote-summary-grid article { padding: 11px 12px; border: 1px solid rgba(18,63,56,.1); border-radius: 11px 11px 11px 4px; background: rgba(255,255,255,.68); }
+.quote-summary-grid small, .quote-summary-grid strong { display: block; }
+.quote-summary-grid small { color: var(--muted); font-size: 7.5px; }
+.quote-summary-grid strong { margin-top: 4px; color: var(--forest); font-size: 10px; }
+.quote-scope, .quote-client-note { position: relative; z-index: 1; margin-top: 11px; padding: 12px 14px; border-radius: 11px; background: rgba(255,255,255,.72); }
+.quote-scope small, .quote-client-note small { color: var(--muted); font-size: 7.5px; }
+.quote-scope p, .quote-client-note p { margin: 5px 0 0; color: #36544d; font-size: 9px; line-height: 1.9; white-space: pre-line; }
+.quote-client-note { border-right: 3px solid var(--gold); }
+.quote-decision-date { position: relative; z-index: 1; margin: 10px 0 0; color: #6f7773; font-size: 8px; }
+.quote-card-empty > p { margin: 0; color: var(--muted); font-size: 9px; line-height: 1.8; }
+.quote-client-response { position: relative; z-index: 1; margin-top: 14px; padding-top: 14px; border-top: 1px solid rgba(18,63,56,.12); }
+.quote-client-response label { color: var(--ink); font-size: 9px; font-weight: 800; }
+.quote-client-response textarea { width: 100%; margin-top: 6px; padding: 10px 12px; border: 1px solid #d4dacf; border-radius: 10px; outline: none; resize: vertical; background: #fff; }
+.quote-client-response textarea:focus { border-color: #6e9589; box-shadow: 0 0 0 3px rgba(18,63,56,.08); }
+.quote-client-response > small { display: block; margin-top: 3px; color: var(--muted); font-size: 7px; text-align: left; }
+.quote-client-response > div { display: flex; justify-content: flex-end; gap: 9px; margin-top: 10px; }
+.quote-decision { border: 0; border-radius: 9px 9px 9px 3px; padding: 9px 15px; cursor: pointer; font-size: 9px; font-weight: 900; }
+.quote-decision.accept { color: white; background: var(--forest); }
+.quote-decision.reject { color: #98493b; background: #f5dfdb; }
+.quote-decision:disabled { opacity: .55; cursor: wait; }
+.quote-client-response > p { margin: 9px 0 0; color: #747d78; font-size: 7.5px; line-height: 1.7; }
+.quote-admin-state { display: flex; align-items: center; gap: 9px; margin-top: 12px; padding: 9px 11px; border: 1px solid #e1ded5; border-radius: 10px; background: #fbfaf6; }
+.quote-admin-state[hidden] { display: none; }
+.quote-admin-state > span { color: var(--muted); font-size: 8px; }
+.quote-admin-state > small { margin-right: auto; color: #78817c; font-size: 7.5px; }
+.dialog-actions > div { display: flex; align-items: center; gap: 8px; }
+.secondary-action { border: 1px solid var(--gold); color: #76501a; background: #fff9ec; border-radius: 9px 9px 9px 3px; padding: 8px 13px; cursor: pointer; font-size: 9px; font-weight: 900; }
+.secondary-action:hover { background: #f7e7c6; }
+.secondary-action:disabled { color: #7c847f; border-color: #d6dbd7; background: #edf0ee; cursor: not-allowed; }
+
+@media (max-width: 620px) {
+  .quote-summary-grid { grid-template-columns: 1fr; }
+  .quote-card-heading { align-items: center; }
+  .quote-client-response > div, .dialog-actions > div { display: grid; grid-template-columns: 1fr 1fr; width: 100%; }
+  .quote-decision, .secondary-action, .dialog-actions .button { width: 100%; }
+  .dialog-actions { align-items: stretch; }
+}

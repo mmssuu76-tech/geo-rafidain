@@ -166,10 +166,34 @@
     await requireUser();
     const baseFields = 'id,request_number,user_id,name,contact,service,study_area,description,deadline,status,created_at,updated_at,request_files(id,original_name,object_path,size_bytes,mime_type)';
     const workflowFields = 'quoted_price_iqd,progress_percent,expected_delivery_date,admin_message';
+    const quoteFields = 'quote_status,quote_scope,quote_sent_at,quote_decided_at,quote_client_note';
     let { data, error } = await client
       .from('service_requests')
-      .select(`${baseFields},${workflowFields}`)
+      .select(`${baseFields},${workflowFields},${quoteFields}`)
       .order('created_at', { ascending: false });
+
+    if (error && /quote_status|quote_scope|quote_sent_at|quote_decided_at|quote_client_note|column.*does not exist/i.test(`${error.code || ''} ${error.message || ''}`)) {
+      const workflowFallback = await client
+        .from('service_requests')
+        .select(`${baseFields},${workflowFields}`)
+        .order('created_at', { ascending: false });
+
+      if (!workflowFallback.error) {
+        data = (workflowFallback.data || []).map(item => ({
+          ...item,
+          quote_status: 'not_sent',
+          quote_scope: null,
+          quote_sent_at: null,
+          quote_decided_at: null,
+          quote_client_note: null,
+          workflow_available: true,
+          quote_available: false
+        }));
+        error = null;
+      } else {
+        error = workflowFallback.error;
+      }
+    }
 
     if (error && /quoted_price_iqd|progress_percent|expected_delivery_date|admin_message|column.*does not exist/i.test(`${error.code || ''} ${error.message || ''}`)) {
       const fallback = await client
@@ -182,11 +206,21 @@
         progress_percent: 0,
         expected_delivery_date: null,
         admin_message: null,
-        workflow_available: false
+        quote_status: 'not_sent',
+        quote_scope: null,
+        quote_sent_at: null,
+        quote_decided_at: null,
+        quote_client_note: null,
+        workflow_available: false,
+        quote_available: false
       }));
       error = fallback.error;
     } else if (!error) {
-      data = (data || []).map(item => ({ ...item, workflow_available: true }));
+      data = (data || []).map(item => ({
+        ...item,
+        workflow_available: item.workflow_available !== false,
+        quote_available: item.quote_available !== false
+      }));
     }
 
     if (error) throw error;
@@ -213,31 +247,64 @@
     const allowedStatuses = new Set(['new', 'reviewing', 'in_progress', 'completed']);
     const requestStatus = String(values.status || '');
     const progress = Number(values.progressPercent);
-    const priceText = String(values.quotedPriceIqd ?? '').trim();
-    const price = priceText === '' ? null : Number(priceText);
-    const expectedDelivery = String(values.expectedDeliveryDate || '').trim() || null;
     const message = String(values.adminMessage || '').trim() || null;
 
     if (!allowedStatuses.has(requestStatus)) throw new Error('INVALID_STATUS');
     if (!Number.isInteger(progress) || progress < 0 || progress > 100) throw new Error('INVALID_PROGRESS');
-    if (price !== null && (!Number.isInteger(price) || price < 0 || price > 1000000000)) throw new Error('INVALID_PRICE');
-    if (expectedDelivery && !/^\d{4}-\d{2}-\d{2}$/.test(expectedDelivery)) throw new Error('INVALID_DELIVERY_DATE');
     if (message && message.length > 2000) throw new Error('ADMIN_MESSAGE_TOO_LONG');
 
     const { data, error } = await client
       .from('service_requests')
       .update({
         status: requestStatus,
-        quoted_price_iqd: price,
         progress_percent: progress,
-        expected_delivery_date: expectedDelivery,
         admin_message: message
       })
       .eq('id', id)
-      .select('id,status,quoted_price_iqd,progress_percent,expected_delivery_date,admin_message,updated_at')
+      .select('id,status,progress_percent,admin_message,updated_at')
       .single();
     if (error) throw error;
     return data;
+  };
+
+  const sendServiceQuote = async (id, values) => {
+    const profile = await getProfile();
+    if (profile?.role !== 'admin') throw new Error('ADMIN_REQUIRED');
+
+    const price = Number(values.quotedPriceIqd);
+    const expectedDelivery = String(values.expectedDeliveryDate || '').trim();
+    const scope = String(values.quoteScope || '').trim();
+    const message = String(values.adminMessage || '').trim() || null;
+
+    if (!Number.isInteger(price) || price < 1000 || price > 1000000000) throw new Error('INVALID_QUOTE_PRICE');
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(expectedDelivery)) throw new Error('INVALID_QUOTE_DELIVERY_DATE');
+    if (scope.length < 20 || scope.length > 4000) throw new Error('INVALID_QUOTE_SCOPE');
+    if (message && message.length > 2000) throw new Error('ADMIN_MESSAGE_TOO_LONG');
+
+    const { data, error } = await client.rpc('admin_send_service_quote', {
+      p_request_id: id,
+      p_price_iqd: price,
+      p_delivery_date: expectedDelivery,
+      p_scope: scope,
+      p_admin_message: message
+    });
+    if (error) throw error;
+    return Array.isArray(data) ? data[0] : data;
+  };
+
+  const respondToServiceQuote = async (id, decision, note = '') => {
+    await requireUser();
+    if (!['accepted', 'rejected'].includes(decision)) throw new Error('INVALID_QUOTE_DECISION');
+    const cleanNote = String(note || '').trim();
+    if (cleanNote.length > 1000) throw new Error('CLIENT_NOTE_TOO_LONG');
+
+    const { data, error } = await client.rpc('respond_to_service_quote', {
+      p_request_id: id,
+      p_decision: decision,
+      p_note: cleanNote || null
+    });
+    if (error) throw error;
+    return Array.isArray(data) ? data[0] : data;
   };
 
   const deleteRequest = async id => {
@@ -333,6 +400,8 @@
     listRequests,
     updateRequestStatus,
     updateRequestWorkflow,
+    sendServiceQuote,
+    respondToServiceQuote,
     deleteRequest,
     createFileLink,
     getMfaAssurance,

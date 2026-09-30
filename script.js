@@ -125,9 +125,11 @@
     }
   };
 
-  const requestedFromPage = new URLSearchParams(window.location.search).get('service');
-  const resourceFromPage = new URLSearchParams(window.location.search).get('resource');
-  const projectFromPage = new URLSearchParams(window.location.search).get('project');
+  const pageParams = new URLSearchParams(window.location.search);
+  const requestedFromPage = pageParams.get('service');
+  const resourceFromPage = pageParams.get('resource');
+  const projectFromPage = pageParams.get('project');
+  const briefFromPage = pageParams.get('brief');
   if (requestedFromPage && serviceSelect) {
     const requestedOption = [...serviceSelect.options].find(item => item.text === requestedFromPage || item.value === requestedFromPage);
     if (requestedOption) {
@@ -135,7 +137,13 @@
       suggestIntakeDefaults(requestedFromPage);
     }
   }
-  if (resourceFromPage && description) {
+  if (briefFromPage && description) {
+    const safeBrief = briefFromPage.slice(0, 5000);
+    if (!description.value.trim()) description.value = safeBrief;
+    charCount.textContent = description.value.length;
+    setSelectByText('dataType', 'بيانات مكانية أخرى');
+    setSelectByText('outputType', 'تحليل جغرافي مع نتائج قابلة للتفسير');
+  } else if (resourceFromPage && description) {
     const projectNote = projectFromPage ? `عنوان البحث: ${projectFromPage}. ` : '';
     const resourceNote = `${projectNote}أرغب في تجهيز بيانات: ${resourceFromPage}. يرجى مساعدتي في تحديد الإصدار والفترة ومنطقة الدراسة المناسبة. `;
     if (!description.value.trim()) description.value = resourceNote;

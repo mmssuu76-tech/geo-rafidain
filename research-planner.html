@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="مخطط عربي مجاني يساعد طلبة وباحثي الجغرافية على تنظيم سؤال الدراسة ومنطقتها وبياناتها ومنهجها ومخرجاتها.">
+  <meta name="theme-color" content="#123f38">
+  <link rel="canonical" href="https://mmssuu76-tech.github.io/geo-rafidain/research-planner.html">
+  <meta property="og:locale" content="ar_IQ">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="مخطط الدراسة الجغرافية | جيو الرافدين">
+  <meta property="og:description" content="حوّل فكرة البحث إلى موجز منظم يحدد السؤال والمنطقة والبيانات والمنهج والمخرجات.">
+  <meta property="og:url" content="https://mmssuu76-tech.github.io/geo-rafidain/research-planner.html">
+  <meta property="og:image" content="https://mmssuu76-tech.github.io/geo-rafidain/assets/geo-rafidain-pwa-512.png">
+  <title>مخطط الدراسة الجغرافية | جيو الرافدين</title>
+  <link rel="icon" href="assets/geo-rafidain.ico" sizes="any">
+  <link rel="apple-touch-icon" href="assets/geo-rafidain-icon.png">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="stylesheet" href="styles.css?v=20261001-planner">
+  <link rel="stylesheet" href="research-planner.css?v=20261001-planner">
+</head>
+<body class="planner-page">
+  <a class="skip-link" href="#main">انتقل إلى المحتوى</a>
+  <header class="site-header scrolled" id="top">
+    <div class="container nav-wrap">
+      <a class="brand" href="index.html" aria-label="جيو الرافدين - الصفحة الرئيسية"><span class="brand-mark" aria-hidden="true"><img src="assets/iraq-mark.svg" alt=""></span><span><strong>جيو الرافدين</strong><small>GeoRafidain</small></span></a>
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="main-nav" aria-label="فتح القائمة"><span></span><span></span><span></span></button>
+      <nav class="main-nav" id="main-nav" aria-label="التنقل الرئيسي"><a href="index.html">الرئيسية</a><a href="index.html#services">الخدمات</a><a href="data-library.html">مكتبة البيانات</a><a class="current" href="research-planner.html" aria-current="page">مخطط الدراسة</a><a href="dashboard.html">لوحة المتابعة</a><a class="button button-small" href="index.html#request">اطلب خدمة</a></nav>
+    </div>
+  </header>
+
+  <main id="main">
+    <section class="planner-hero">
+      <div class="planner-grid-lines" aria-hidden="true"></div>
+      <div class="container planner-hero-layout">
+        <div><p class="eyebrow"><span></span> أداة مجانية للباحثين</p><h1>حوّل فكرة الدراسة إلى<br><em>مسار بحثي واضح.</em></h1><p>نظّم سؤال البحث، المجال المكاني والزمني، البيانات، المنهج والمخرجات في موجز واحد. الأداة إرشادية ولا تستبدل مراجعة المشرف أو المتخصص.</p></div>
+        <ol class="planner-hero-steps" aria-label="مراحل المخطط"><li><b>01</b><span>تعريف الدراسة</span></li><li><b>02</b><span>النطاق المكاني</span></li><li><b>03</b><span>البيانات والمنهج</span></li><li><b>04</b><span>المخرجات والموجز</span></li></ol>
+      </div>
+    </section>
+
+    <section class="planner-section">
+      <div class="container planner-layout">
+        <aside class="planner-progress" aria-label="تقدم إعداد الدراسة">
+          <div class="progress-heading"><span>تقدم المخطط</span><strong id="progress-percent">25%</strong></div>
+          <div class="progress-track" aria-hidden="true"><span id="progress-bar"></span></div>
+          <ol id="progress-steps"><li class="active" data-progress-step="0"><b>1</b><span>الفكرة والسؤال<small>هدف الدراسة ومستواها</small></span></li><li data-progress-step="1"><b>2</b><span>النطاق<small>المكان والفترة</small></span></li><li data-progress-step="2"><b>3</b><span>البيانات والمنهج<small>المصادر والتحليلات</small></span></li><li data-progress-step="3"><b>4</b><span>المخرجات<small>التسليم والملاحظات</small></span></li></ol>
+          <div class="planner-local-note"><span aria-hidden="true">✓</span><p><strong>محفوظ على جهازك</strong> تُحفظ المسودة في هذا المتصفح فقط، ولا تُرسل إلى المنصة تلقائياً.</p></div>
+        </aside>
+
+        <div class="planner-card">
+          <form id="research-planner-form" novalidate>
+            <section class="planner-step active" data-step="0" aria-labelledby="step-1-title">
+              <div class="step-heading"><span>الخطوة 1 من 4</span><h2 id="step-1-title">عرّف فكرة الدراسة.</h2><p>ابدأ بصياغة مختصرة؛ يمكنك تعديلها لاحقاً.</p></div>
+              <div class="field-grid">
+                <label class="full">عنوان مبدئي للبحث<input name="title" type="text" minlength="8" maxlength="160" required placeholder="مثال: تحليل تغير الغطاء الأرضي في محافظة ذي قار"></label>
+                <label class="full">سؤال البحث أو المشكلة<textarea name="question" rows="4" minlength="20" maxlength="1200" required placeholder="ما الظاهرة التي تريد قياسها أو تفسيرها؟ وما العلاقة المكانية أو الزمنية التي تبحث عنها؟"></textarea><small>اكتب 20 حرفاً على الأقل.</small></label>
+                <label>المستوى الأكاديمي<select name="level" required><option value="">اختر المستوى</option><option>بحث تخرج</option><option>دبلوم عالٍ</option><option>رسالة ماجستير</option><option>أطروحة دكتوراه</option><option>بحث للنشر</option><option>مشروع تطبيقي</option></select></label>
+                <label>المجال الرئيس<select name="domain" required><option value="">اختر المجال</option><option value="environment">تغيرات بيئية ومناخية</option><option value="urban">جغرافية حضرية واستعمالات الأرض</option><option value="agriculture">زراعة وغطاء نباتي</option><option value="water">مياه وهيدرولوجيا</option><option value="population">سكان وخدمات</option><option value="terrain">تضاريس وجيومورفولوجيا</option></select></label>
+              </div>
+            </section>
+
+            <section class="planner-step" data-step="1" aria-labelledby="step-2-title" hidden>
+              <div class="step-heading"><span>الخطوة 2 من 4</span><h2 id="step-2-title">حدّد المجال المكاني والزمني.</h2><p>كلما كان النطاق أوضح أصبح اختيار البيانات والدقة أكثر سلامة.</p></div>
+              <div class="field-grid">
+                <label>نطاق الدراسة<select name="scope" required><option value="">اختر النطاق</option><option>محافظة واحدة</option><option>عدة محافظات</option><option>قضاء أو ناحية</option><option>حوض مائي</option><option>مدينة أو منطقة حضرية</option><option>العراق كاملاً</option><option>نطاق آخر</option></select></label>
+                <label>المحافظة الرئيسة<select name="governorate"><option value="">غير محددة</option><option>بغداد</option><option>البصرة</option><option>نينوى</option><option>أربيل</option><option>الأنبار</option><option>بابل</option><option>دهوك</option><option>ديالى</option><option>ذي قار</option><option>السليمانية</option><option>صلاح الدين</option><option>كركوك</option><option>كربلاء</option><option>القادسية</option><option>المثنى</option><option>ميسان</option><option>النجف</option><option>واسط</option></select></label>
+                <label class="full">وصف منطقة الدراسة<input name="studyArea" type="text" minlength="2" maxlength="300" required placeholder="المحافظة، القضاء، المدينة، الحوض أو وصف الحدود"></label>
+                <label>بداية الفترة<input name="periodStart" type="number" min="1900" max="2100" placeholder="مثال: 2000"></label>
+                <label>نهاية الفترة<input name="periodEnd" type="number" min="1900" max="2100" placeholder="مثال: 2025"></label>
+                <label class="full">الوحدة المكانية أو دقة التحليل المطلوبة<select name="scale"><option>غير محددة — أحتاج إلى اقتراح</option><option>تفصيل عالٍ (10–30 متر)</option><option>تفصيل متوسط (100–250 متر)</option><option>تحليل إقليمي (1 كم أو أكثر)</option><option>وحدات إدارية أو إحصائية</option></select></label>
+              </div>
+            </section>
+
+            <section class="planner-step" data-step="2" aria-labelledby="step-3-title" hidden>
+              <div class="step-heading"><span>الخطوة 3 من 4</span><h2 id="step-3-title">اختر البيانات والتحليلات.</h2><p>هذه اختيارات أولية؛ سيعرض الموجز مصادر مقترحة وفق المجال.</p></div>
+              <fieldset><legend>مصادر أو أنواع بيانات متوقعة <small>اختر واحداً على الأقل</small></legend><div class="choice-grid">
+                <label><input type="checkbox" name="datasets" value="sentinel-2-l2a" data-label="مرئيات Sentinel-2"><span><b>Sentinel-2</b><small>غطاء أرضي، زراعة ومياه</small></span></label>
+                <label><input type="checkbox" name="datasets" value="landsat-collection-2-l2" data-label="مرئيات Landsat"><span><b>Landsat</b><small>تغير زمني وحرارة سطح</small></span></label>
+                <label><input type="checkbox" name="datasets" value="era5-single-levels" data-label="بيانات ERA5 المناخية"><span><b>ERA5</b><small>حرارة، رياح ومتغيرات مناخية</small></span></label>
+                <label><input type="checkbox" name="datasets" value="chirps-v3" data-label="أمطار CHIRPS"><span><b>CHIRPS</b><small>أمطار وجفاف</small></span></label>
+                <label><input type="checkbox" name="datasets" value="nasadem-hgt" data-label="نموذج الارتفاع NASADEM"><span><b>NASADEM</b><small>ارتفاع وانحدار وأحواض</small></span></label>
+                <label><input type="checkbox" name="datasets" value="openstreetmap-iraq-geofabrik" data-label="بيانات OpenStreetMap"><span><b>OpenStreetMap</b><small>طرق، مبانٍ وخدمات</small></span></label>
+                <label><input type="checkbox" name="datasets" value="other" data-label="بيانات أخرى أو ميدانية"><span><b>بيانات أخرى</b><small>جداول، حدود أو قياسات ميدانية</small></span></label>
+              </div></fieldset>
+              <fieldset><legend>التحليلات المتوقعة <small>اختر واحداً على الأقل</small></legend><div class="choice-grid methods">
+                <label><input type="checkbox" name="methods" value="cartography" data-label="إخراج خرائط بحثية"><span><b>خرائط بحثية</b><small>إخراج وتوثيق كارتوغرافي</small></span></label>
+                <label><input type="checkbox" name="methods" value="change" data-label="كشف التغير الزمني"><span><b>كشف التغير</b><small>مقارنة فترات أو سنوات</small></span></label>
+                <label><input type="checkbox" name="methods" value="indices" data-label="مؤشرات طيفية"><span><b>مؤشرات طيفية</b><small>NDVI، NDBI أو NDWI</small></span></label>
+                <label><input type="checkbox" name="methods" value="surface-temperature" data-label="حرارة سطح الأرض"><span><b>حرارة السطح</b><small>LST وتحليل الاتجاه</small></span></label>
+                <label><input type="checkbox" name="methods" value="suitability" data-label="نمذجة الملاءمة المكانية"><span><b>ملاءمة مكانية</b><small>معايير وأوزان متعددة</small></span></label>
+                <label><input type="checkbox" name="methods" value="hydrology" data-label="تحليل هيدرولوجي وتضاريس"><span><b>تحليل هيدرولوجي</b><small>أحواض، جريان وانحدار</small></span></label>
+                <label><input type="checkbox" name="methods" value="statistics" data-label="تحليل إحصائي مكاني"><span><b>إحصاء مكاني</b><small>أنماط وعلاقات وتجمعات</small></span></label>
+              </div></fieldset>
+            </section>
+
+            <section class="planner-step" data-step="3" aria-labelledby="step-4-title" hidden>
+              <div class="step-heading"><span>الخطوة 4 من 4</span><h2 id="step-4-title">حدّد المخرجات والقيود.</h2><p>اختر ما تحتاج إلى تسليمه فعلياً، ثم أنشئ الموجز.</p></div>
+              <fieldset><legend>المخرجات المطلوبة <small>اختر واحداً على الأقل</small></legend><div class="choice-grid outputs">
+                <label><input type="checkbox" name="outputs" value="maps" data-label="خرائط PDF/PNG جاهزة للنشر"><span><b>خرائط نهائية</b><small>PDF وPNG عالية الدقة</small></span></label>
+                <label><input type="checkbox" name="outputs" value="gis" data-label="ملفات GIS قابلة للتحليل"><span><b>ملفات GIS</b><small>GeoPackage أو Shapefile/GeoJSON</small></span></label>
+                <label><input type="checkbox" name="outputs" value="tables" data-label="جداول وملخصات رقمية"><span><b>جداول</b><small>Excel أو CSV</small></span></label>
+                <label><input type="checkbox" name="outputs" value="methodology" data-label="وصف منهجي للبيانات والخطوات"><span><b>وصف منهجي</b><small>مصادر وخطوات وقيود</small></span></label>
+                <label><input type="checkbox" name="outputs" value="project" data-label="ملف مشروع QGIS أو ArcGIS"><span><b>ملف مشروع</b><small>QGIS أو ArcGIS</small></span></label>
+              </div></fieldset>
+              <div class="field-grid final-fields"><label>موعد تقريبي<input name="deadline" type="date"></label><label>نظام الإحداثيات<select name="crs"><option>غير محدد — أحتاج إلى اقتراح</option><option>WGS 84</option><option>UTM Zone 38N</option><option>UTM Zone 39N</option><option>حسب بيانات المشروع</option></select></label><label class="full">ملاحظات أو قيود<textarea name="notes" rows="3" maxlength="1000" placeholder="بيانات متوفرة، متطلبات الجامعة، صيغ محددة، أو أي قيود يجب مراعاتها"></textarea></label></div>
+            </section>
+
+            <p class="planner-error" id="planner-error" role="alert" aria-live="assertive"></p>
+            <div class="planner-actions"><button id="planner-back" type="button" class="secondary" disabled>السابق</button><button id="planner-next" type="button">التالي</button><button id="planner-generate" type="submit" hidden>إنشاء الموجز البحثي</button></div>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <section class="brief-section" id="research-brief" hidden>
+      <div class="container">
+        <div class="brief-heading"><div><p class="eyebrow dark"><span></span> موجز الدراسة</p><h2>مسودة منظمة قابلة للمراجعة.</h2></div><p>هذه توصية أولية مبنية على اختياراتك وليست حكماً منهجياً نهائياً. راجعها مع المشرف أو المتخصص قبل اعتماد الدراسة.</p></div>
+        <article class="research-brief-card"><header><span>جيو الرافدين · مخطط الدراسة</span><strong id="brief-date"></strong></header><div id="brief-content"></div><div class="brief-recommendations"><h3>مصادر مقترحة من مكتبة جيو الرافدين</h3><div id="recommended-resources"></div></div></article>
+        <div class="brief-actions"><button id="brief-copy" type="button">نسخ الموجز</button><button id="brief-download" type="button">تنزيل TXT</button><button id="brief-print" type="button">طباعة / حفظ PDF</button><a id="brief-library-link" href="data-library.html">فتح المصادر في ملف البحث</a><a id="brief-request-link" class="primary" href="index.html#request">تحويله إلى طلب خدمة ←</a></div>
+        <p class="brief-notice" id="brief-notice" role="status" aria-live="polite"></p>
+        <button class="start-over" id="planner-reset" type="button">بدء مخطط جديد</button>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer planner-footer"><div class="container footer-main"><a class="brand footer-brand" href="index.html"><span class="brand-mark" aria-hidden="true"><img src="assets/iraq-mark.svg" alt=""></span><span><strong>جيو الرافدين</strong><small>بيانات مكانية، رؤية أعمق</small></span></a><div class="footer-links"><a href="index.html">الرئيسية</a><a href="data-library.html">مكتبة البيانات</a><a href="research-planner.html">مخطط الدراسة</a><a href="dashboard.html">لوحة المتابعة</a><a href="privacy.html">الخصوصية</a><a href="terms.html">شروط الاستخدام</a></div><a class="footer-cta" href="index.html#request">ابدأ طلباً جديداً <span>←</span></a></div><div class="container footer-bottom"><span>© <span id="year"></span> جيو الرافدين. جميع الحقوق محفوظة.</span><a href="mailto:mmssuu76@gmail.com">mmssuu76@gmail.com</a></div></footer>
+  <script src="research-planner.js?v=20261001-planner"></script>
+  <script src="pwa.js?v=20260624"></script>
+</body>
+</html>

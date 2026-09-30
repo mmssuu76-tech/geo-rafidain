@@ -1,5 +1,6 @@
 .library-page { background: #f7f4ec; }
 .library-page .site-header { background: rgba(12, 48, 43, .97); }
+.library-page .main-nav { gap: 14px; font-size: 13px; }
 .library-page .main-nav .current { color: var(--sand-light); opacity: 1; }
 
 .library-hero { position: relative; overflow: hidden; padding: 160px 0 88px; color: white; background: radial-gradient(circle at 12% 15%, #2a665a 0, transparent 31%), linear-gradient(135deg, #123f38, #082622); }

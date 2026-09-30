@@ -32,10 +32,23 @@
   const lastRefresh = document.querySelector('#last-refresh');
   const dashboardNotice = document.querySelector('#dashboard-notice');
   const signOutButton = document.querySelector('#dashboard-sign-out');
+  const notificationsButton = document.querySelector('#notifications-button');
+  const notificationsCount = document.querySelector('#notifications-count');
+  const notificationsPanel = document.querySelector('#notifications-panel');
+  const notificationsList = document.querySelector('#notifications-list');
+  const markNotificationsReadButton = document.querySelector('#mark-notifications-read');
+  const deliverableFile = document.querySelector('#deliverable-file');
+  const deliverableVersion = document.querySelector('#deliverable-version');
+  const deliverableNote = document.querySelector('#deliverable-note');
+  const deliverableNoteCount = document.querySelector('#deliverable-note-count');
+  const uploadDeliverableButton = document.querySelector('#upload-deliverable');
   let requests = [];
+  let notifications = [];
   let selectedId = null;
   let profile = null;
   let noticeTimer = null;
+  let notificationRefreshTimer = null;
+  let communicationAvailable = true;
 
   if (metricGrid && !document.querySelector('#visible-count')) {
     metricGrid.insertAdjacentHTML('afterend', `
@@ -156,6 +169,13 @@
   const dateLabel = value => value
     ? new Intl.DateTimeFormat('ar-IQ', { day: 'numeric', month: 'short', year: 'numeric' }).format(new Date(value))
     : '—';
+
+  const dateTimeLabel = value => value
+    ? new Intl.DateTimeFormat('ar-IQ', { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' }).format(new Date(value))
+    : '—';
+
+  const communicationFeatureMissing = error => /request_messages|request_deliverables|user_notifications|send_request_message|mark_notifications_read|admin_register_request_deliverable|PGRST202|42P01/i
+    .test(`${error?.code || ''} ${error?.message || ''}`);
 
   const progressValue = value => Math.min(100, Math.max(0, Number(value) || 0));
 
@@ -302,6 +322,83 @@
       </section>`;
   };
 
+  const requestWorkspaceMarkup = () => `
+    <section class="detail-field full delivery-workspace" aria-labelledby="delivery-title">
+      <div class="workspace-heading"><div><small>ملفات المشروع</small><h3 id="delivery-title">التسليمات الآمنة</h3></div><span>روابط مؤقتة</span></div>
+      <div class="deliverables-list" id="deliverables-list"><p class="workspace-loading">جارٍ تحميل ملفات التسليم...</p></div>
+    </section>
+    <section class="detail-field full conversation-workspace" aria-labelledby="conversation-title">
+      <div class="workspace-heading"><div><small>تواصل مرتبط بالطلب</small><h3 id="conversation-title">المحادثة</h3></div><span>محفوظة داخل الحساب</span></div>
+      <div class="messages-list" id="messages-list" aria-live="polite"><p class="workspace-loading">جارٍ تحميل الرسائل...</p></div>
+      <div class="message-composer">
+        <label for="message-body">رسالة جديدة</label>
+        <textarea id="message-body" rows="3" minlength="2" maxlength="3000" placeholder="اكتب استفسارك أو تحديثك المتعلق بهذا الطلب..."></textarea>
+        <div><small><span id="message-count">0</span>/3000</small><button id="send-message" type="button">إرسال الرسالة</button></div>
+      </div>
+    </section>`;
+
+  const renderMessages = messages => {
+    const container = document.querySelector('#messages-list');
+    if (!container) return;
+    container.innerHTML = messages.length
+      ? messages.map(message => {
+          const own = message.sender_id === profile?.id;
+          const roleLabel = own ? 'أنت' : (message.sender_role === 'admin' ? 'فريق جيو الرافدين' : 'العميل');
+          return `<article class="message-bubble ${message.sender_role === 'admin' ? 'admin' : 'client'} ${own ? 'own' : ''}">
+            <div><strong>${roleLabel}</strong><time datetime="${safe(message.created_at)}">${dateTimeLabel(message.created_at)}</time></div>
+            <p>${safe(message.body)}</p>
+          </article>`;
+        }).join('')
+      : '<p class="workspace-empty">لا توجد رسائل بعد. استخدم المحادثة للأسئلة والتحديثات المرتبطة بهذا الطلب فقط.</p>';
+    container.scrollTop = container.scrollHeight;
+  };
+
+  const renderDeliverables = deliverables => {
+    const container = document.querySelector('#deliverables-list');
+    if (!container) return;
+    container.innerHTML = deliverables.length
+      ? deliverables.map(file => `<article class="deliverable-card">
+          <div><span>✓</span><div><small>${safe(file.version_label)}</small><strong>${safe(file.original_name)}</strong><p>${safe(file.delivery_note || 'ملف تسليم مرتبط بالمشروع.')}</p></div></div>
+          <footer><time datetime="${safe(file.created_at)}">${dateTimeLabel(file.created_at)}</time><span>${fileSize(file.size_bytes)}</span><button class="deliverable-open" type="button" data-path="${safe(file.object_path)}">فتح الملف</button></footer>
+        </article>`).join('')
+      : '<p class="workspace-empty">لا توجد ملفات تسليم بعد. ستظهر هنا الإصدارات النهائية أو المسودات التي يشاركها فريق جيو الرافدين.</p>';
+  };
+
+  const showWorkspaceUnavailable = () => {
+    communicationAvailable = false;
+    const message = profile?.role === 'admin'
+      ? 'يلزم تطبيق تحديث المحادثات والتسليمات في قاعدة البيانات لتفعيل هذا القسم.'
+      : 'سيُفعّل التواصل والتسليم الآمن لهذا الطلب قريباً.';
+    ['#messages-list', '#deliverables-list'].forEach(selector => {
+      const container = document.querySelector(selector);
+      if (container) container.innerHTML = `<p class="workspace-empty">${message}</p>`;
+    });
+    const composer = document.querySelector('.message-composer');
+    if (composer) composer.hidden = true;
+  };
+
+  const loadRequestWorkspace = async requestId => {
+    try {
+      const [messages, deliverables] = await Promise.all([
+        backend.listRequestMessages(requestId),
+        backend.listRequestDeliverables(requestId)
+      ]);
+      communicationAvailable = true;
+      renderMessages(messages);
+      renderDeliverables(deliverables);
+      const composer = document.querySelector('.message-composer');
+      if (composer) composer.hidden = false;
+    } catch (error) {
+      if (communicationFeatureMissing(error)) showWorkspaceUnavailable();
+      else {
+        const messageContainer = document.querySelector('#messages-list');
+        const deliveryContainer = document.querySelector('#deliverables-list');
+        if (messageContainer) messageContainer.innerHTML = '<p class="workspace-error">تعذر تحميل المحادثة. تحقق من الاتصال ثم أعد المحاولة.</p>';
+        if (deliveryContainer) deliveryContainer.innerHTML = '<p class="workspace-error">تعذر تحميل ملفات التسليم.</p>';
+      }
+    }
+  };
+
   const updateQuoteAdminControls = item => {
     if (profile?.role !== 'admin') return;
     const available = item.quote_available !== false;
@@ -358,6 +455,44 @@
     dashboardNotice.className = `dashboard-notice ${type}`;
     dashboardNotice.hidden = false;
     noticeTimer = setTimeout(() => { dashboardNotice.hidden = true; }, 6000);
+  };
+
+  const notificationTypeLabels = {
+    message: 'رسالة',
+    status: 'تحديث',
+    quote: 'عرض سعر',
+    delivery: 'تسليم'
+  };
+
+  const renderNotifications = () => {
+    const unread = notifications.filter(item => !item.read_at).length;
+    notificationsCount.textContent = unread;
+    notificationsCount.hidden = unread === 0;
+    notificationsButton.classList.toggle('has-unread', unread > 0);
+    markNotificationsReadButton.disabled = unread === 0;
+    notificationsList.innerHTML = notifications.length
+      ? notifications.map(item => `<button class="notification-item ${item.read_at ? '' : 'unread'}" type="button" data-notification-id="${safe(item.id)}" data-request-id="${safe(item.request_id || '')}">
+          <span>${safe(notificationTypeLabels[item.notification_type] || 'تنبيه')}</span>
+          <div><strong>${safe(item.title)}</strong><p>${safe(item.body)}</p><time datetime="${safe(item.created_at)}">${dateTimeLabel(item.created_at)}</time></div>
+        </button>`).join('')
+      : '<p class="notifications-empty">لا توجد إشعارات حتى الآن.</p>';
+  };
+
+  const refreshNotifications = async (silent = false) => {
+    try {
+      notifications = await backend.listNotifications();
+      communicationAvailable = true;
+      notificationsButton.hidden = false;
+      renderNotifications();
+    } catch (error) {
+      if (communicationFeatureMissing(error)) {
+        communicationAvailable = false;
+        notificationsButton.hidden = true;
+        notificationsPanel.hidden = true;
+      } else if (!silent) {
+        showNotice('تعذر تحديث الإشعارات حالياً.', 'error');
+      }
+    }
   };
 
   const updateMetrics = data => {
@@ -459,6 +594,10 @@
     quoteScopeCount.textContent = dialogQuoteScope.value.length;
     dialogAdminMessage.value = item.admin_message || '';
     adminMessageCount.textContent = dialogAdminMessage.value.length;
+    if (deliverableFile) deliverableFile.value = '';
+    if (deliverableVersion) deliverableVersion.value = 'الإصدار النهائي 1';
+    if (deliverableNote) deliverableNote.value = '';
+    if (deliverableNoteCount) deliverableNoteCount.textContent = '0';
     workflowExtraFields.forEach(field => { field.hidden = !workflowAvailable; });
     workflowMigrationNote.hidden = workflowAvailable && item.quote_available !== false;
     updateQuoteAdminControls(item);
@@ -481,8 +620,10 @@
       <div class="detail-field full progress-detail"><div><small>نسبة الإنجاز</small><strong>${progressValue(item.progress_percent)}%</strong></div><span><i style="width:${progressValue(item.progress_percent)}%"></i></span></div>
       <div class="detail-field full"><small>رسالة المتابعة</small><strong class="detail-description admin-message">${safe(item.admin_message || 'لا توجد رسالة متابعة بعد.')}</strong></div>` : ''}
       <div class="detail-field full"><small>وصف المشروع</small><strong class="detail-description">${safe(item.description)}</strong></div>
-      <div class="detail-field full"><small>الملفات الخاصة</small>${files}</div>`;
+      <div class="detail-field full"><small>ملفات الطلب الأصلية</small>${files}</div>
+      ${requestWorkspaceMarkup()}`;
     if (!dialog.open) dialog.showModal();
+    loadRequestWorkspace(id);
   };
 
   const loadRequests = async (announce = false) => {
@@ -494,6 +635,7 @@
       updateServiceOptions();
       clearPanelError();
       render();
+      await refreshNotifications(true);
       lastRefresh.textContent = `آخر تحديث: ${new Intl.DateTimeFormat('ar-IQ', { hour: 'numeric', minute: '2-digit' }).format(new Date())}`;
       if (announce) showNotice('تم تحديث قائمة الطلبات.');
     } catch (error) {
@@ -537,6 +679,50 @@
       return;
     }
 
+    const messageButton = event.target.closest('#send-message');
+    if (messageButton) {
+      const bodyField = document.querySelector('#message-body');
+      const body = bodyField?.value.trim() || '';
+      if (body.length < 2) {
+        bodyField?.focus();
+        showNotice('اكتب رسالة من حرفين على الأقل.', 'error');
+        return;
+      }
+      messageButton.disabled = true;
+      messageButton.textContent = 'جارٍ الإرسال...';
+      try {
+        await backend.sendRequestMessage(selectedId, body);
+        bodyField.value = '';
+        const counter = document.querySelector('#message-count');
+        if (counter) counter.textContent = '0';
+        await loadRequestWorkspace(selectedId);
+        showNotice('تم إرسال الرسالة وحفظها داخل الطلب.');
+      } catch (error) {
+        const message = /MESSAGE_RATE_LIMIT/i.test(`${error?.message || ''}`)
+          ? 'تم بلوغ حد الرسائل المؤقت. انتظر قليلاً ثم حاول مجدداً.'
+          : 'تعذر إرسال الرسالة. تحقق من الاتصال والجلسة ثم حاول مجدداً.';
+        showNotice(message, 'error');
+      } finally {
+        messageButton.disabled = false;
+        messageButton.textContent = 'إرسال الرسالة';
+      }
+      return;
+    }
+
+    const deliverableButton = event.target.closest('.deliverable-open');
+    if (deliverableButton) {
+      deliverableButton.disabled = true;
+      try {
+        const url = await backend.createDeliverableLink(deliverableButton.dataset.path);
+        window.open(url, '_blank', 'noopener,noreferrer');
+      } catch {
+        showNotice('تعذر فتح ملف التسليم أو انتهت صلاحية الجلسة.', 'error');
+      } finally {
+        deliverableButton.disabled = false;
+      }
+      return;
+    }
+
     const button = event.target.closest('.file-open');
     if (!button) return;
     button.disabled = true;
@@ -551,9 +737,14 @@
   });
 
   document.querySelector('#dialog-content').addEventListener('input', event => {
-    if (event.target.id !== 'quote-client-note') return;
-    const counter = document.querySelector('#quote-client-note-count');
-    if (counter) counter.textContent = event.target.value.length;
+    if (event.target.id === 'quote-client-note') {
+      const counter = document.querySelector('#quote-client-note-count');
+      if (counter) counter.textContent = event.target.value.length;
+    }
+    if (event.target.id === 'message-body') {
+      const counter = document.querySelector('#message-count');
+      if (counter) counter.textContent = event.target.value.length;
+    }
   });
 
   search.addEventListener('input', render);
@@ -569,6 +760,47 @@
   });
   refreshButton.addEventListener('click', () => loadRequests(true));
 
+  notificationsButton.addEventListener('click', () => {
+    const willOpen = notificationsPanel.hidden;
+    notificationsPanel.hidden = !willOpen;
+    notificationsButton.setAttribute('aria-expanded', String(willOpen));
+    if (willOpen) refreshNotifications(true);
+  });
+
+  notificationsList.addEventListener('click', async event => {
+    const item = event.target.closest('.notification-item');
+    if (!item) return;
+    const notificationId = item.dataset.notificationId;
+    try {
+      await backend.markNotificationsRead(notificationId);
+      notifications = notifications.map(notification => notification.id === notificationId
+        ? { ...notification, read_at: notification.read_at || new Date().toISOString() }
+        : notification);
+      renderNotifications();
+    } catch {
+      showNotice('تعذر تحديث حالة الإشعار.', 'error');
+    }
+    const requestId = item.dataset.requestId;
+    if (requestId && requests.some(request => request.id === requestId)) {
+      notificationsPanel.hidden = true;
+      notificationsButton.setAttribute('aria-expanded', 'false');
+      showRequest(requestId);
+    }
+  });
+
+  markNotificationsReadButton.addEventListener('click', async () => {
+    markNotificationsReadButton.disabled = true;
+    try {
+      await backend.markNotificationsRead(null);
+      const readAt = new Date().toISOString();
+      notifications = notifications.map(notification => ({ ...notification, read_at: notification.read_at || readAt }));
+      renderNotifications();
+    } catch {
+      showNotice('تعذر تحديد الإشعارات كمقروءة.', 'error');
+      markNotificationsReadButton.disabled = false;
+    }
+  });
+
   dialogStatus.addEventListener('change', () => {
     if (dialogStatus.value === 'completed') dialogProgress.value = '100';
   });
@@ -579,6 +811,51 @@
 
   dialogQuoteScope.addEventListener('input', () => {
     quoteScopeCount.textContent = dialogQuoteScope.value.length;
+  });
+
+  deliverableNote.addEventListener('input', () => {
+    deliverableNoteCount.textContent = deliverableNote.value.length;
+  });
+
+  uploadDeliverableButton.addEventListener('click', async () => {
+    if (profile?.role !== 'admin' || !selectedId) return;
+    const selected = requests.find(item => item.id === selectedId);
+    const file = deliverableFile.files?.[0];
+    if (!file) {
+      showNotice('اختر ملف التسليم أولاً.', 'error');
+      deliverableFile.focus();
+      return;
+    }
+    if (!deliverableVersion.checkValidity() || !deliverableNote.checkValidity()) {
+      deliverableVersion.reportValidity();
+      deliverableNote.reportValidity();
+      return;
+    }
+
+    uploadDeliverableButton.disabled = true;
+    const originalLabel = uploadDeliverableButton.textContent;
+    uploadDeliverableButton.textContent = 'جارٍ رفع الملف بأمان...';
+    try {
+      await backend.uploadRequestDeliverable(selected, file, {
+        versionLabel: deliverableVersion.value,
+        deliveryNote: deliverableNote.value
+      });
+      deliverableFile.value = '';
+      deliverableNote.value = '';
+      deliverableNoteCount.textContent = '0';
+      await loadRequestWorkspace(selectedId);
+      showNotice('تم رفع ملف التسليم وإرسال إشعار إلى العميل.');
+    } catch (error) {
+      const details = `${error?.message || ''}`;
+      const message = /FILE_TOO_LARGE/.test(details) ? 'حجم ملف التسليم يتجاوز 50MB.'
+        : /FILE_TYPE_NOT_ALLOWED/.test(details) ? 'نوع ملف التسليم غير مسموح.'
+          : /ADMIN_MFA_REQUIRED/.test(details) ? 'يلزم إكمال المصادقة الثنائية قبل رفع التسليم.'
+            : 'تعذر رفع ملف التسليم. تحقق من الملف والاتصال ثم حاول مجدداً.';
+      showNotice(message, 'error');
+    } finally {
+      uploadDeliverableButton.disabled = false;
+      uploadDeliverableButton.textContent = originalLabel;
+    }
   });
 
   document.querySelector('#save-status').addEventListener('click', async () => {
@@ -751,13 +1028,20 @@
       exportButton.hidden = profile.role !== 'admin';
       exportCsvButton.hidden = profile.role !== 'admin';
       await loadRequests();
+      clearInterval(notificationRefreshTimer);
+      notificationRefreshTimer = setInterval(() => {
+        if (!document.hidden) refreshNotifications(true);
+      }, 60000);
     } catch {
       showGate('تعذر التحقق من الحساب', 'تحقق من الإنترنت وإعدادات قاعدة البيانات ثم أعد تحميل الصفحة.');
     }
   };
 
   backend?.onAuthStateChange(event => {
-    if (event === 'SIGNED_OUT') showGate('انتهت الجلسة', 'سجّل الدخول مرة أخرى من الصفحة الرئيسية.');
+    if (event === 'SIGNED_OUT') {
+      clearInterval(notificationRefreshTimer);
+      showGate('انتهت الجلسة', 'سجّل الدخول مرة أخرى من الصفحة الرئيسية.');
+    }
   });
 
   initialize();

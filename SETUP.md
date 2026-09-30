@@ -12,7 +12,8 @@
 6. شغّل [`supabase/admin-workflow.sql`](supabase/admin-workflow.sql) لإضافة السعر ونسبة الإنجاز وموعد التسليم ورسالة المتابعة.
 7. شغّل [`supabase/quote-workflow.sql`](supabase/quote-workflow.sql) لتفعيل إرسال عرض السعر وقبوله أو رفضه مع سجل قرارات مؤرخ.
 8. شغّل [`supabase/gis-file-formats.sql`](supabase/gis-file-formats.sql) لتفعيل GeoJSON وGeoPackage وملف ZIP لمكونات الشيب فايل.
-9. شغّل [`supabase/function-permissions-hardening.sql`](supabase/function-permissions-hardening.sql) أخيراً لنقل دوال الأمان الداخلية خارج مخطط API وإغلاق استدعائها المباشر.
+9. شغّل [`supabase/communication-delivery.sql`](supabase/communication-delivery.sql) لتفعيل المحادثات والإشعارات وتسليم الملفات الخاصة المرتبطة بكل طلب.
+10. شغّل [`supabase/function-permissions-hardening.sql`](supabase/function-permissions-hardening.sql) أخيراً لنقل دوال الأمان الداخلية خارج مخطط API وإغلاق استدعائها المباشر.
 
 ينشئ الملف الجداول وسياسات RLS وحاوية ملفات خاصة بحجم أقصى 10MB للملف.
 
@@ -75,6 +76,8 @@ where email = 'your-email@example.com';
 - ادخل بحساب المدير وتأكد أنك ترى جميع الطلبات وتستطيع تغيير الحالة.
 - حدّث السعر ونسبة الإنجاز ورسالة المتابعة، ثم افتح الطلب بحساب العميل وتأكد من ظهورها للقراءة فقط.
 - أرسل عرض سعر يتضمن السعر والموعد والنطاق، ثم اقبله أو ارفضه بحساب العميل وتأكد من حفظ القرار وعدم إمكان الرد مرتين على العرض نفسه.
+- أرسل رسالة من حساب العميل، وتأكد من ظهورها للمدير ومن وصول إشعار داخل حسابه، ثم اختبر الرد من المدير بعد تفعيل TOTP.
+- ارفع ملف تسليم من حساب المدير، وتأكد من ظهور الإصدار للعميل وأن رابط الفتح مؤقت ولا يعمل لمستخدم آخر.
 - فعّل TOTP، ثم تحقق أن لوحة المدير تطلب الرمز في جلسة جديدة.
 - حاول إنشاء أكثر من خمسة طلبات في ساعة واحدة وتأكد أن قاعدة البيانات ترفض السادس.
 - تحقق من `admin_retention_queue` قبل تفعيل مهمة الحذف الموصوفة في [`RETENTION.md`](RETENTION.md).

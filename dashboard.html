@@ -9,7 +9,7 @@
   <link rel="apple-touch-icon" href="assets/geo-rafidain-icon.png">
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="stylesheet" href="styles.css">
-  <link rel="stylesheet" href="dashboard.css?v=20260930-quotes">
+  <link rel="stylesheet" href="dashboard.css?v=20260930-communication">
 </head>
 <body class="dashboard-page">
   <aside class="dashboard-sidebar" aria-label="القائمة الجانبية">
@@ -34,10 +34,15 @@
   <main class="dashboard-main" id="requests" hidden>
     <header class="dashboard-header">
       <div><p id="welcome-text">مرحباً،</p><h1 id="dashboard-title">متابعة الطلبات</h1></div>
-      <div class="dashboard-actions"><span class="account-email" id="account-email"></span><button id="dashboard-sign-out" type="button">تسجيل الخروج</button><button id="refresh-button" type="button">تحديث الطلبات</button><button id="export-csv-button" type="button">تصدير CSV</button><button id="export-button" type="button">نسخة JSON</button><a class="button button-small" href="index.html#request">+ طلب جديد</a></div>
+      <div class="dashboard-actions"><span class="account-email" id="account-email"></span><button id="dashboard-sign-out" type="button">تسجيل الخروج</button><button id="notifications-button" class="notifications-button" type="button" aria-controls="notifications-panel" aria-expanded="false">الإشعارات <span id="notifications-count" hidden>0</span></button><button id="refresh-button" type="button">تحديث الطلبات</button><button id="export-csv-button" type="button">تصدير CSV</button><button id="export-button" type="button">نسخة JSON</button><a class="button button-small" href="index.html#request">+ طلب جديد</a></div>
     </header>
 
     <p class="dashboard-notice" id="dashboard-notice" role="status" aria-live="polite" hidden></p>
+
+    <section class="notifications-panel" id="notifications-panel" aria-labelledby="notifications-title" hidden>
+      <div class="notifications-heading"><div><small>تنبيهات الحساب</small><h2 id="notifications-title">الإشعارات</h2></div><button id="mark-notifications-read" type="button">تحديد الكل كمقروء</button></div>
+      <div class="notifications-list" id="notifications-list"><p class="notifications-empty">لا توجد إشعارات جديدة.</p></div>
+    </section>
 
     <section class="metric-grid" aria-label="ملخص الطلبات">
       <article><span class="metric-icon green" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 4h12v16H6zM9 8h6M9 12h6M9 16h4"/></svg></span><div><small>إجمالي الطلبات</small><strong id="total-count">0</strong></div></article>
@@ -72,6 +77,15 @@
       <div class="dialog-header"><div><small id="dialog-id"></small><h2 id="dialog-title">تفاصيل الطلب</h2></div><button class="dialog-close" value="close" aria-label="إغلاق">×</button></div>
       <div class="dialog-content" id="dialog-content"></div>
       <div class="dialog-footer" id="admin-dialog-controls">
+        <section class="deliverable-admin-controls" id="deliverable-admin-controls">
+          <div><small>تسليم آمن</small><h3>إضافة مخرج جديد للعميل</h3><p>يُحفظ الملف في مساحة خاصة ويصل تنبيه إلى صاحب الطلب.</p></div>
+          <div class="deliverable-admin-grid">
+            <label>ملف التسليم<input id="deliverable-file" type="file" accept=".pdf,.docx,.xlsx,.csv,.zip,.jpg,.jpeg,.png,.tif,.tiff,.geojson,.json,.gpkg,.kml,.kmz"></label>
+            <label>اسم الإصدار<input id="deliverable-version" type="text" minlength="2" maxlength="80" value="الإصدار النهائي 1" placeholder="مثال: المسودة الأولى أو الإصدار النهائي"></label>
+            <label class="full">ملاحظة التسليم<textarea id="deliverable-note" rows="2" maxlength="1200" placeholder="صف محتوى الملف وأي تعليمات مهمة للعميل..."></textarea><small><span id="deliverable-note-count">0</span>/1200</small></label>
+          </div>
+          <button class="delivery-upload-button" id="upload-deliverable" type="button">رفع الملف وإبلاغ العميل</button>
+        </section>
         <div class="admin-workflow-fields">
           <label>حالة المشروع<select id="dialog-status"><option value="new">جديد</option><option value="reviewing">قيد المراجعة</option><option value="in_progress">قيد التنفيذ</option><option value="completed">مكتمل</option></select></label>
           <label class="workflow-extra-field">نسبة الإنجاز<input id="dialog-progress" type="number" inputmode="numeric" min="0" max="100" step="1" value="0"><span>%</span></label>
@@ -89,8 +103,8 @@
 
   <script src="vendor/supabase-2.108.2.min.js"></script>
   <script src="backend-config.js"></script>
-  <script src="backend.js?v=20260930-quotes"></script>
-  <script src="dashboard.js?v=20260930-quotes"></script>
+  <script src="backend.js?v=20260930-communication"></script>
+  <script src="dashboard.js?v=20260930-communication"></script>
   <script src="pwa.js"></script>
 </body>
 </html>

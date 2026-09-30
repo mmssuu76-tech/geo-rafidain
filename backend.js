@@ -307,6 +307,105 @@
     return Array.isArray(data) ? data[0] : data;
   };
 
+  const listRequestMessages = async requestId => {
+    await requireUser();
+    const { data, error } = await client
+      .from('request_messages')
+      .select('id,request_id,sender_id,sender_role,body,created_at')
+      .eq('request_id', requestId)
+      .order('created_at', { ascending: true })
+      .limit(200);
+    if (error) throw error;
+    return data || [];
+  };
+
+  const sendRequestMessage = async (requestId, body) => {
+    await requireUser();
+    const cleanBody = String(body || '').trim();
+    if (cleanBody.length < 2 || cleanBody.length > 3000) throw new Error('INVALID_MESSAGE_BODY');
+    const { data, error } = await client.rpc('send_request_message', {
+      p_request_id: requestId,
+      p_body: cleanBody
+    });
+    if (error) throw error;
+    return Array.isArray(data) ? data[0] : data;
+  };
+
+  const listRequestDeliverables = async requestId => {
+    await requireUser();
+    const { data, error } = await client
+      .from('request_deliverables')
+      .select('id,request_id,uploaded_by,object_path,original_name,size_bytes,mime_type,version_label,delivery_note,created_at')
+      .eq('request_id', requestId)
+      .order('created_at', { ascending: false });
+    if (error) throw error;
+    return data || [];
+  };
+
+  const listNotifications = async (limit = 30) => {
+    await requireUser();
+    const safeLimit = Math.min(50, Math.max(1, Number(limit) || 30));
+    const { data, error } = await client
+      .from('user_notifications')
+      .select('id,request_id,notification_type,title,body,read_at,created_at')
+      .order('created_at', { ascending: false })
+      .limit(safeLimit);
+    if (error) throw error;
+    return data || [];
+  };
+
+  const markNotificationsRead = async notificationId => {
+    await requireUser();
+    const { data, error } = await client.rpc('mark_notifications_read', {
+      p_notification_id: notificationId || null
+    });
+    if (error) throw error;
+    return Number(data) || 0;
+  };
+
+  const validateDeliverable = file => {
+    if (!file) throw new Error('DELIVERABLE_REQUIRED');
+    const extension = file.name.split('.').pop()?.toLowerCase() || '';
+    if (!allowedFileTypes[extension]) throw new Error(`FILE_TYPE_NOT_ALLOWED:${file.name}`);
+    if (file.size > 50 * 1024 * 1024) throw new Error(`FILE_TOO_LARGE:${file.name}`);
+    if (file.size === 0) throw new Error(`FILE_EMPTY:${file.name}`);
+    return { extension, mimeType: allowedFileTypes[extension] };
+  };
+
+  const uploadRequestDeliverable = async (request, file, values = {}) => {
+    const profile = await getProfile();
+    if (profile?.role !== 'admin') throw new Error('ADMIN_REQUIRED');
+    if (!request?.id || !request?.user_id) throw new Error('INVALID_REQUEST');
+
+    const { extension, mimeType } = validateDeliverable(file);
+    const versionLabel = String(values.versionLabel || '').trim();
+    const deliveryNote = String(values.deliveryNote || '').trim() || null;
+    if (versionLabel.length < 2 || versionLabel.length > 80) throw new Error('INVALID_VERSION_LABEL');
+    if (deliveryNote && deliveryNote.length > 1200) throw new Error('DELIVERY_NOTE_TOO_LONG');
+
+    const objectPath = `${request.user_id}/${request.id}/${crypto.randomUUID()}.${extension}`;
+    const { error: uploadError } = await client.storage
+      .from('request-deliverables')
+      .upload(objectPath, file, { cacheControl: '3600', upsert: false, contentType: mimeType });
+    if (uploadError) throw uploadError;
+
+    const { data, error } = await client.rpc('admin_register_request_deliverable', {
+      p_request_id: request.id,
+      p_object_path: objectPath,
+      p_original_name: file.name,
+      p_size_bytes: file.size,
+      p_mime_type: mimeType,
+      p_version_label: versionLabel,
+      p_delivery_note: deliveryNote
+    });
+
+    if (error) {
+      await client.storage.from('request-deliverables').remove([objectPath]);
+      throw error;
+    }
+    return Array.isArray(data) ? data[0] : data;
+  };
+
   const deleteRequest = async id => {
     const profile = await getProfile();
     if (profile?.role !== 'admin') throw new Error('ADMIN_REQUIRED');
@@ -331,6 +430,15 @@
     await requireUser();
     const { data, error } = await client.storage
       .from('request-files')
+      .createSignedUrl(objectPath, 60);
+    if (error) throw error;
+    return data.signedUrl;
+  };
+
+  const createDeliverableLink = async objectPath => {
+    await requireUser();
+    const { data, error } = await client.storage
+      .from('request-deliverables')
       .createSignedUrl(objectPath, 60);
     if (error) throw error;
     return data.signedUrl;
@@ -402,8 +510,15 @@
     updateRequestWorkflow,
     sendServiceQuote,
     respondToServiceQuote,
+    listRequestMessages,
+    sendRequestMessage,
+    listRequestDeliverables,
+    listNotifications,
+    markNotificationsRead,
+    uploadRequestDeliverable,
     deleteRequest,
     createFileLink,
+    createDeliverableLink,
     getMfaAssurance,
     listMfaFactors,
     enrollTotp,

@@ -1,4 +1,4 @@
-const GEO_RAFIDAIN_CACHE = 'geo-rafidain-static-v16';
+const GEO_RAFIDAIN_CACHE = 'geo-rafidain-static-v17';
 const NETWORK_FIRST_EXTENSIONS = new Set(['.html', '.css', '.js', '.json', '.webmanifest']);
 
 const APP_SHELL = [
@@ -7,6 +7,7 @@ const APP_SHELL = [
   './dashboard.html',
   './data-library.html',
   './research-planner.html',
+  './research-guides.html',
   './resources-admin.html',
   './privacy.html',
   './terms.html',
@@ -20,12 +21,14 @@ const APP_SHELL = [
   './dashboard.css',
   './data-library.css',
   './research-planner.css',
+  './research-guides.css',
   './resources-admin.css',
   './legal.css',
   './script.js',
   './dashboard.js',
   './data-library.js',
   './research-planner.js',
+  './research-guides.js',
   './resources-admin.js',
   './security.js',
   './study-map.js',

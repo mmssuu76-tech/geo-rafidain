@@ -392,11 +392,11 @@
   });
 
   menuToggle?.addEventListener('click', () => {
-    const open = mainNav.classList.toggle('open');
+    const open = document.body.classList.toggle('menu-open');
     menuToggle.setAttribute('aria-expanded', String(open));
   });
   mainNav?.querySelectorAll('a').forEach(link => link.addEventListener('click', () => {
-    mainNav.classList.remove('open');
+    document.body.classList.remove('menu-open');
     menuToggle?.setAttribute('aria-expanded', 'false');
   }));
 

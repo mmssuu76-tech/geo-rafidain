@@ -93,7 +93,7 @@
 .brief-recommendations h3 { margin: 0 0 13px; color: var(--forest); font-size: 17px; }
 #recommended-resources { display: flex; flex-wrap: wrap; gap: 7px; }
 #recommended-resources span { padding: 8px 12px; border-radius: 999px; color: var(--forest); background: #eaf2ee; font-size: 12px; font-weight: 800; }
-.brief-actions { display: grid; grid-template-columns: repeat(5,1fr); gap: 8px; margin-top: 14px; }
+.brief-actions { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; margin-top: 14px; }
 .brief-actions button,.brief-actions a { display: inline-flex; justify-content: center; align-items: center; min-height: 48px; border: 1px solid #cbd6d1; border-radius: 10px 10px 10px 3px; padding: 9px 11px; color: var(--forest); background: white; cursor: pointer; text-align: center; font-size: 12px; font-weight: 800; }
 .brief-actions a.primary { color: var(--forest); border-color: var(--sand); background: var(--sand); }
 .brief-notice { min-height: 20px; margin: 10px 2px 0; color: #4a786a; font-size: 12px; }

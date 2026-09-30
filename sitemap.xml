@@ -5,6 +5,22 @@
     <priority>1.0</priority>
   </url>
   <url>
+    <loc>https://mmssuu76-tech.github.io/geo-rafidain/cartography.html</loc>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://mmssuu76-tech.github.io/geo-rafidain/spatial-analysis.html</loc>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://mmssuu76-tech.github.io/geo-rafidain/environmental-change.html</loc>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://mmssuu76-tech.github.io/geo-rafidain/remote-sensing.html</loc>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://mmssuu76-tech.github.io/geo-rafidain/privacy.html</loc>
     <priority>0.4</priority>
   </url>

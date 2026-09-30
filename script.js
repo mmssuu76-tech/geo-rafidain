@@ -125,6 +125,15 @@
     }
   };
 
+  const requestedFromPage = new URLSearchParams(window.location.search).get('service');
+  if (requestedFromPage && serviceSelect) {
+    const requestedOption = [...serviceSelect.options].find(item => item.text === requestedFromPage || item.value === requestedFromPage);
+    if (requestedOption) {
+      serviceSelect.value = requestedOption.value || requestedOption.text;
+      suggestIntakeDefaults(requestedFromPage);
+    }
+  }
+
   document.querySelectorAll('.service-select').forEach(button => {
     button.addEventListener('click', () => {
       const requested = button.dataset.service;

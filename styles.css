@@ -107,6 +107,12 @@ svg { display: block; }
 .service-card h3 { font-size: 20px; margin: 30px 0 12px; }
 .service-card p { font-size: 13px; color: var(--muted); margin: 0; }
 .card-link, .data-request { margin-top: auto; padding: 20px 0 0; text-align: right; background: none; border: 0; cursor: pointer; font-size: 11px; color: var(--rust); font-weight: 700; }
+.service-card-actions { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; margin-top: auto; }
+.service-card-actions .card-link { margin-top: 0; }
+.card-request { flex: 0 0 auto; padding: 7px 10px; color: var(--forest); background: #f3e6cd; border: 1px solid #e4d3b2; border-radius: 9px 9px 9px 3px; cursor: pointer; font-size: 8px; font-weight: 800; transition: .2s ease; }
+.card-request:hover { transform: translateY(-2px); background: var(--sand); }
+.service-card.featured .card-request { color: var(--sand-light); background: rgba(233,186,104,.12); border-color: rgba(233,186,104,.25); }
+.service-card.featured .card-request:hover { color: var(--forest); background: var(--sand); }
 
 .packages-section { background: #f7f3ea; position: relative; overflow: hidden; }
 .packages-section::before { content: ""; position: absolute; width: 380px; height: 380px; border-radius: 50%; right: -160px; top: -130px; background: radial-gradient(circle, rgba(188,135,57,.16), transparent 68%); }

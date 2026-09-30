@@ -1,4 +1,4 @@
-const GEO_RAFIDAIN_CACHE = 'geo-rafidain-static-v10';
+const GEO_RAFIDAIN_CACHE = 'geo-rafidain-static-v11';
 const NETWORK_FIRST_EXTENSIONS = new Set(['.html', '.css', '.js', '.json', '.webmanifest']);
 
 const APP_SHELL = [
@@ -8,7 +8,12 @@ const APP_SHELL = [
   './privacy.html',
   './terms.html',
   './security.html',
+  './cartography.html',
+  './spatial-analysis.html',
+  './environmental-change.html',
+  './remote-sensing.html',
   './styles.css',
+  './service-details.css',
   './dashboard.css',
   './legal.css',
   './script.js',

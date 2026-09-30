@@ -72,7 +72,7 @@
   <link rel="icon" href="assets/geo-rafidain.ico" sizes="any">
   <link rel="apple-touch-icon" href="assets/geo-rafidain-icon.png">
   <link rel="manifest" href="manifest.webmanifest">
-  <link rel="stylesheet" href="styles.css?v=20260624-trust">
+  <link rel="stylesheet" href="styles.css?v=20260930-workflow">
 </head>
 <body>
   <a class="skip-link" href="#main">انتقل إلى المحتوى</a>
@@ -410,12 +410,72 @@
 
     <section class="section process" id="how-it-works">
       <div class="container">
-        <div class="center-heading reveal"><p class="eyebrow dark"><span></span> رحلة مشروعك</p><h2>أربع خطوات واضحة، بلا تعقيد.</h2></div>
-        <div class="process-line">
-          <article class="process-step reveal"><span>1</span><h3>أرسل التفاصيل</h3><p>حدد منطقة الدراسة والخدمة والنتيجة المطلوبة.</p></article>
-          <article class="process-step reveal"><span>2</span><h3>مراجعة علمية</h3><p>نراجع البيانات والمنهج ونوضح النطاق والتكلفة.</p></article>
-          <article class="process-step reveal"><span>3</span><h3>التنفيذ والتدقيق</h3><p>تنفيذ التحليل ومراجعة الدقة وجودة الإخراج.</p></article>
-          <article class="process-step reveal"><span>4</span><h3>التسليم والدعم</h3><p>تستلم الملفات مع شرح موجز وإمكانية المراجعة.</p></article>
+        <div class="center-heading process-heading reveal">
+          <p class="eyebrow dark"><span></span> آلية العمل</p>
+          <h2>من سؤالٍ بحثي إلى مخرجٍ جغرافي قابل للاستخدام.</h2>
+          <p class="process-intro">يمر كل طلب بمسار واضح يضبط الهدف والبيانات والمدة والتكلفة قبل بدء التنفيذ، ثم يوثّق ما تم إنجازه عند التسليم.</p>
+        </div>
+
+        <ol class="process-line" aria-label="مراحل تنفيذ طلب الخدمة">
+          <li class="process-step reveal">
+            <span>01</span><small>تحديد الهدف</small>
+            <h3>إرسال الطلب</h3>
+            <p>صف سؤال البحث، منطقة الدراسة، الفترة الزمنية، والمخرج الذي تريد الوصول إليه.</p>
+          </li>
+          <li class="process-step reveal">
+            <span>02</span><small>فحص النطاق</small>
+            <h3>المراجعة الأولية</h3>
+            <p>نراجع وضوح المطلوب وتوافر البيانات ودقتها ومدى ملاءمة المنهج المقترح.</p>
+          </li>
+          <li class="process-step reveal">
+            <span>03</span><small>اتفاق واضح</small>
+            <h3>عرض السعر والمدة</h3>
+            <p>نرسل نطاق العمل والمخرجات والتكلفة والمدة المتوقعة قبل اعتماد التنفيذ.</p>
+          </li>
+          <li class="process-step reveal">
+            <span>04</span><small>معالجة وتحليل</small>
+            <h3>التنفيذ المنهجي</h3>
+            <p>تُجهّز البيانات وتُنفذ التحليلات والخرائط وفق النطاق المتفق عليه.</p>
+          </li>
+          <li class="process-step reveal">
+            <span>05</span><small>مراجعة الجودة</small>
+            <h3>التحقق والتدقيق</h3>
+            <p>نفحص الاتساق المكاني، سلامة الملفات، وضوح الإخراج، ومصادر البيانات المستخدمة.</p>
+          </li>
+          <li class="process-step reveal">
+            <span>06</span><small>نتيجة مفهومة</small>
+            <h3>التسليم والمتابعة</h3>
+            <p>تستلم المخرجات المتفق عليها مع شرح موجز، وتُعالج الملاحظات الواقعة ضمن النطاق.</p>
+          </li>
+        </ol>
+
+        <div class="process-details">
+          <article class="process-panel process-brief reveal">
+            <p class="process-panel-label">لتقييم طلبك بدقة</p>
+            <h3>ما الذي نحتاجه منك؟</h3>
+            <ul>
+              <li><span>01</span><div><strong>حدود الدراسة والزمن</strong><small>الموقع أو المحافظة أو ملف الحدود، والفترة الزمنية المطلوبة.</small></div></li>
+              <li><span>02</span><div><strong>نوع الخدمة والمخرجات</strong><small>خرائط، جداول، ملفات GIS، مرئيات معالجة، أو تقرير موجز.</small></div></li>
+              <li><span>03</span><div><strong>البيانات المتاحة</strong><small>الملفات التي تملكها أو المصادر التي تريد منا تجهيزها وتوثيقها.</small></div></li>
+              <li><span>04</span><div><strong>موعد التسليم والدقة</strong><small>الموعد المطلوب، مستوى التفصيل، وصيغة الملفات النهائية.</small></div></li>
+            </ul>
+          </article>
+
+          <aside class="process-panel process-boundary reveal" aria-labelledby="responsibility-title">
+            <p class="process-panel-label">شفافية مهنية</p>
+            <h3 id="responsibility-title">حدود المسؤولية العلمية</h3>
+            <p>مخرجات المنصة أدوات دعم بحثي وتحليلي، ولا تستبدل حكم الباحث أو مراجعة المشرف الأكاديمي أو الجهة المختصة.</p>
+            <ul>
+              <li>تعتمد دقة النتائج على جودة البيانات ودقتها المكانية والزمنية والمنهج المستخدم.</li>
+              <li>يبقى تفسير النتائج وصياغة الاستنتاجات النهائية مسؤولية الباحث.</li>
+              <li>القرارات القانونية أو الرسمية أو المتعلقة بالسلامة تتطلب تحققاً متخصصاً مستقلاً.</li>
+            </ul>
+          </aside>
+        </div>
+
+        <div class="process-cta reveal">
+          <div><small>جاهز للبدء؟</small><h3>أرسل فكرة مشروعك وسنحوّلها إلى نطاق عمل واضح.</h3></div>
+          <div class="process-actions"><a class="button" href="#request">ابدأ طلبك الآن</a><a class="text-link" href="#packages">اطّلع على الباقات <span aria-hidden="true">←</span></a></div>
         </div>
       </div>
     </section>
@@ -713,7 +773,7 @@
   <footer class="site-footer">
     <div class="container footer-main">
       <a class="brand footer-brand" href="#top"><span class="brand-mark" aria-hidden="true"><img src="assets/iraq-mark.svg" alt=""></span><span><strong>جيو الرافدين</strong><small>بيانات مكانية، رؤية أعمق</small></span></a>
-      <div class="footer-links"><a href="#services">الخدمات</a><a href="#packages">الباقات</a><a href="#portfolio">الأعمال</a><a href="#faq">الأسئلة</a><a href="#data-library">البيانات</a><a href="#about">عن المؤسس</a><a href="#trust">الثقة والأمان</a><a href="#contact">التواصل</a><a href="dashboard.html">لوحة المتابعة</a><a href="privacy.html">الخصوصية</a><a href="terms.html">شروط الاستخدام</a></div>
+      <div class="footer-links"><a href="#services">الخدمات</a><a href="#packages">الباقات</a><a href="#portfolio">الأعمال</a><a href="#faq">الأسئلة</a><a href="#data-library">البيانات</a><a href="#how-it-works">آلية العمل</a><a href="#about">عن المؤسس</a><a href="#trust">الثقة والأمان</a><a href="#contact">التواصل</a><a href="dashboard.html">لوحة المتابعة</a><a href="privacy.html">الخصوصية</a><a href="terms.html">شروط الاستخدام</a></div>
       <a class="footer-cta" href="#request">ابدأ طلباً جديداً <span>←</span></a>
     </div>
     <div class="container footer-bottom"><span>© <span id="year"></span> جيو الرافدين. جميع الحقوق محفوظة.</span><a href="mailto:mmssuu76@gmail.com">mmssuu76@gmail.com</a></div>

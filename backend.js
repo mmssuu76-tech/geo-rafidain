@@ -515,6 +515,41 @@
     return data;
   };
 
+  const listResearchProjectVersions = async id => {
+    await requireUser();
+    if (!/^[0-9a-f-]{36}$/i.test(String(id || ''))) throw new Error('INVALID_RESEARCH_PROJECT_ID');
+    const { data, error } = await client
+      .from('research_project_versions')
+      .select('id,project_id,user_id,version,title,summary,study_area,stage,workspace_data,saved_at')
+      .eq('project_id', id)
+      .order('version', { ascending: false })
+      .limit(50);
+    if (error) throw error;
+    return data || [];
+  };
+
+  const restoreResearchProjectVersion = async (id, savedVersion, expectedVersion) => {
+    await requireUser();
+    if (!/^[0-9a-f-]{36}$/i.test(String(id || ''))) throw new Error('INVALID_RESEARCH_PROJECT_ID');
+    const version = Number(savedVersion);
+    const expected = Number(expectedVersion);
+    if (!Number.isInteger(version) || version < 1 || !Number.isInteger(expected) || expected < 1) {
+      throw new Error('INVALID_RESEARCH_PROJECT_VERSION');
+    }
+    const { data, error } = await client.rpc('restore_research_project_version', {
+      p_project_id: id,
+      p_version: version,
+      p_expected_version: expected
+    });
+    if (error) {
+      if (/RESEARCH_PROJECT_CONFLICT|40001/i.test(`${error.code || ''} ${error.message || ''}`)) {
+        throw new Error('RESEARCH_PROJECT_CONFLICT');
+      }
+      throw error;
+    }
+    return Array.isArray(data) ? data[0] : data;
+  };
+
   const listAdminResources = async () => {
     await requireUser();
     const { data, error } = await client
@@ -624,6 +659,8 @@
     listResearchProjects,
     createResearchProject,
     updateResearchProject,
+    listResearchProjectVersions,
+    restoreResearchProjectVersion,
     listPublishedResources,
     listAdminResources,
     adminUpsertResource,

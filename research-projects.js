@@ -22,6 +22,8 @@
   let currentUser = null;
   let statusTimer = null;
   const savingProjects = new Set();
+  const expandedHistories = new Set();
+  const projectVersions = new Map();
 
   const readJSON = (key, fallback = null) => {
     try {
@@ -33,7 +35,7 @@
   };
   const safe = value => String(value ?? '').replace(/[&<>'"]/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[character]));
   const dateLabel = value => value ? new Intl.DateTimeFormat('ar-IQ', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value)) : '—';
-  const migrationMissing = error => /research_projects|42P01|PGRST205|schema cache/i.test(`${error?.code || ''} ${error?.message || ''}`);
+  const migrationMissing = error => /research_projects|research_project_versions|42P01|PGRST205|schema cache/i.test(`${error?.code || ''} ${error?.message || ''}`);
 
   function buildLocalSnapshot() {
     const planner = readJSON(KEYS.planner, null);
@@ -107,6 +109,32 @@
     return { sources, guides, answers, progress: Math.min(100, Math.max(0, Number(workspace.progress) || 0)) };
   }
 
+  function renderVersionHistory(project) {
+    if (!expandedHistories.has(project.id)) return '';
+    const history = projectVersions.get(project.id);
+    if (!history || history.state === 'loading') {
+      return '<section class="version-history" aria-live="polite"><div class="history-loading"><span></span> جارٍ تحميل سجل النسخ...</div></section>';
+    }
+    if (history.state === 'error') {
+      return '<section class="version-history"><p class="history-error">تعذر تحميل سجل النسخ. اضغط «سجل النسخ» لإغلاقه ثم أعد المحاولة.</p></section>';
+    }
+    if (!history.items.length) {
+      return '<section class="version-history"><p>سيظهر أول سجل بعد حفظ النسخة التالية.</p></section>';
+    }
+    return `<section class="version-history" aria-label="سجل نسخ ${safe(project.title)}">
+      <header><div><strong>سجل النسخ المحفوظة</strong><span>${history.items.length} نسخة متاحة لهذا المشروع</span></div><small>الاستعادة تنشئ إصداراً جديداً ولا تحذف النسخة الحالية.</small></header>
+      <div class="version-list">${history.items.map(item => {
+        const summary = projectWorkspaceSummary(item);
+        const isCurrent = Number(item.version) === Number(project.version);
+        return `<article class="version-row${isCurrent ? ' current' : ''}" data-version="${safe(item.version)}">
+          <div><b>الإصدار ${safe(item.version)}</b>${isCurrent ? '<em>الحالي</em>' : ''}<span>${safe(dateLabel(item.saved_at))}</span></div>
+          <dl><div><dt>التقدم</dt><dd>${summary.progress}%</dd></div><div><dt>المصادر</dt><dd>${summary.sources}</dd></div><div><dt>التدقيق</dt><dd>${summary.answers}/25</dd></div></dl>
+          <div><button type="button" data-action="version-backup" data-version="${safe(item.version)}">تنزيل JSON</button><button type="button" data-action="version-restore" data-version="${safe(item.version)}"${isCurrent ? ' disabled' : ''}>استعادة</button></div>
+        </article>`;
+      }).join('')}</div>
+    </section>`;
+  }
+
   function renderProjects() {
     const active = activeProject();
     document.getElementById('projects-count').textContent = projects.length === 1 ? 'مشروع واحد' : projects.length === 2 ? 'مشروعان' : `${projects.length} مشاريع`;
@@ -119,7 +147,8 @@
       const activeClass = active.id === project.id ? ' active' : '';
       return `<article class="project-card${activeClass}" data-project-id="${safe(project.id)}">
         <div><header><span class="project-stage">${safe(stageLabels[project.stage] || project.stage)}</span><span class="project-version">الإصدار ${safe(project.version)}</span></header><h3>${safe(project.title)}</h3><p>${safe(project.summary || project.study_area || 'لا يوجد وصف مختصر لهذا المشروع.')}</p><dl><div><dt>آخر حفظ</dt><dd>${safe(dateLabel(project.updated_at))}</dd></div><div><dt>التقدم</dt><dd>${summary.progress}%</dd></div><div><dt>المصادر</dt><dd>${summary.sources}</dd></div><div><dt>التدقيق</dt><dd>${summary.answers}/25</dd></div></dl></div>
-        <div class="project-actions"><button class="primary" type="button" data-action="save">حفظ نسخة الجهاز</button><button type="button" data-action="open">فتح على هذا الجهاز</button><button type="button" data-action="backup">تنزيل نسخة JSON</button></div>
+        <div class="project-actions"><button class="primary" type="button" data-action="save">رفع نسخة الجهاز للسحابة</button><button type="button" data-action="open">استعادة النسخة السحابية</button><button type="button" data-action="history" aria-expanded="${expandedHistories.has(project.id)}">سجل النسخ</button><button type="button" data-action="backup">تنزيل ملف احتياطي</button></div>
+        ${renderVersionHistory(project)}
       </article>`;
     }).join('');
   }
@@ -128,6 +157,8 @@
     projectList.innerHTML = '<div class="projects-loading"><span></span><p>جارٍ تحميل المشاريع...</p></div>';
     try {
       projects = await backend.listResearchProjects();
+      expandedHistories.clear();
+      projectVersions.clear();
       migrationGate.hidden = true;
       renderProjects();
       showStatus(projects.length ? `تم تحميل ${projects.length} من المشاريع الخاصة بحسابك.` : 'حسابك جاهز. أنشئ أول مشروع بحثي سحابي.');
@@ -227,6 +258,68 @@
     if (!project) return;
     const action = button.dataset.action;
 
+    if (action === 'history') {
+      if (expandedHistories.has(project.id)) {
+        expandedHistories.delete(project.id);
+        renderProjects();
+        return;
+      }
+      expandedHistories.add(project.id);
+      projectVersions.set(project.id, { state: 'loading', items: [] });
+      renderProjects();
+      try {
+        const items = await backend.listResearchProjectVersions(project.id);
+        projectVersions.set(project.id, { state: 'ready', items });
+      } catch (error) {
+        console.error('Research project history load failed:', error);
+        projectVersions.set(project.id, { state: 'error', items: [] });
+      }
+      renderProjects();
+      return;
+    }
+
+    if (action === 'version-backup') {
+      const version = Number(button.dataset.version);
+      const saved = projectVersions.get(project.id)?.items?.find(item => Number(item.version) === version);
+      if (!saved) return;
+      const blob = new Blob(['\ufeff', JSON.stringify({ exportedAt: new Date().toISOString(), projectId: project.id, savedVersion: saved }, null, 2)], { type: 'application/json;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `geo-rafidain-project-${project.id.slice(0, 8)}-v${version}.json`;
+      link.click();
+      URL.revokeObjectURL(url);
+      showStatus(`تم تجهيز ملف الإصدار ${version} للتنزيل.`);
+      return;
+    }
+
+    if (action === 'version-restore') {
+      const version = Number(button.dataset.version);
+      if (!Number.isInteger(version) || version < 1 || version === Number(project.version)) return;
+      const approved = window.confirm(`سيتم استعادة محتوى الإصدار ${version} داخل السحابة كإصدار جديد، مع بقاء جميع النسخ السابقة وبيانات هذا الجهاز دون تغيير. هل تريد المتابعة؟`);
+      if (!approved) return;
+      setBusy(button, true, 'جارٍ الاستعادة...');
+      try {
+        const restored = await backend.restoreResearchProjectVersion(project.id, version, project.version);
+        projects = projects.map(item => item.id === restored.id ? restored : item);
+        projectVersions.delete(project.id);
+        expandedHistories.delete(project.id);
+        renderProjects();
+        showStatus(`تمت استعادة الإصدار ${version} بأمان كإصدار جديد رقم ${restored.version}.`);
+      } catch (error) {
+        if (error?.message === 'RESEARCH_PROJECT_CONFLICT') {
+          showStatus('توجد نسخة أحدث من جهاز آخر. تم تحديث القائمة قبل الاستعادة.', true);
+          await loadProjects();
+        } else {
+          console.error('Research project version restore failed:', error);
+          showStatus('تعذر استعادة النسخة المطلوبة. حاول مرة أخرى.', true);
+        }
+      } finally {
+        if (button.isConnected) setBusy(button, false);
+      }
+      return;
+    }
+
     if (action === 'backup') {
       const blob = new Blob(['\ufeff', JSON.stringify({ exportedAt: new Date().toISOString(), project }, null, 2)], { type: 'application/json;charset=utf-8' });
       const url = URL.createObjectURL(blob);
@@ -268,6 +361,8 @@
           workspaceData: localSnapshot
         }, project.version);
         projects = projects.map(item => item.id === updated.id ? updated : item);
+        expandedHistories.delete(project.id);
+        projectVersions.delete(project.id);
         renderProjects();
         try {
           localStorage.setItem(KEYS.active, JSON.stringify({ id: updated.id, title: updated.title, version: updated.version, updatedAt: updated.updated_at }));

@@ -14,7 +14,8 @@
 8. شغّل [`supabase/gis-file-formats.sql`](supabase/gis-file-formats.sql) لتفعيل GeoJSON وGeoPackage وملف ZIP لمكونات الشيب فايل.
 9. شغّل [`supabase/communication-delivery.sql`](supabase/communication-delivery.sql) لتفعيل المحادثات والإشعارات وتسليم الملفات الخاصة المرتبطة بكل طلب.
 10. شغّل [`supabase/geo-resources.sql`](supabase/geo-resources.sql) لإنشاء مكتبة المصادر البحثية، وسياسات العرض العام، ودوال الإدارة المحمية، وإضافة المصادر الأولية الموثقة.
-11. شغّل [`supabase/function-permissions-hardening.sql`](supabase/function-permissions-hardening.sql) أخيراً لنقل دوال الأمان الداخلية خارج مخطط API وإغلاق استدعائها المباشر.
+11. شغّل [`supabase/research-workspaces.sql`](supabase/research-workspaces.sql) لتفعيل المشاريع البحثية الخاصة والمزامنة اليدوية المحمية بسياسات RLS.
+12. شغّل [`supabase/function-permissions-hardening.sql`](supabase/function-permissions-hardening.sql) أخيراً لنقل دوال الأمان الداخلية خارج مخطط API وإغلاق استدعائها المباشر.
 
 ينشئ الملف الجداول وسياسات RLS وحاوية ملفات خاصة بحجم أقصى 10MB للملف.
 
@@ -82,6 +83,7 @@ where email = 'your-email@example.com';
 - فعّل TOTP، ثم تحقق أن لوحة المدير تطلب الرمز في جلسة جديدة.
 - افتح `resources-admin.html` بحساب المدير ذي جلسة AAL2، وعدّل مورداً تجريبياً ثم ألغِ نشره وتأكد من اختفائه من `data-library.html`، وأعد نشره بعد الاختبار.
 - افتح `data-library.html` كزائر غير مسجل وتأكد أن المسودات لا تظهر وأن روابط الوصول والوثائق والترخيص تستخدم HTTPS.
+- افتح `research-projects.html` بحسابين مختلفين، وأنشئ مشروعاً في كل حساب، ثم تأكد أن كل حساب يرى مشروعه وحده. اختبر كذلك حفظ نسخة الجهاز واستعادتها، ثم افتح الحساب من جهاز آخر وتحقق من منع الحفظ عند وجود إصدار أحدث.
 - حاول إنشاء أكثر من خمسة طلبات في ساعة واحدة وتأكد أن قاعدة البيانات ترفض السادس.
 - تحقق من `admin_retention_queue` قبل تفعيل مهمة الحذف الموصوفة في [`RETENTION.md`](RETENTION.md).
 - تأكد أن فتح `dashboard.html` مباشرة عبر `file://` يعرض رسالة تمنع الاستخدام.

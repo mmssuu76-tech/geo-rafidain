@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="مساحة المشاريع البحثية السحابية في جيو الرافدين لحفظ تقدم دراسات الجغرافية ومزامنتها بأمان بين الأجهزة.">
+  <meta name="theme-color" content="#123f38">
+  <link rel="canonical" href="https://mmssuu76-tech.github.io/geo-rafidain/research-projects.html">
+  <meta property="og:locale" content="ar_IQ">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="مشاريعي البحثية | جيو الرافدين">
+  <meta property="og:description" content="أنشئ مساحات بحثية خاصة واحفظ تقدم الدراسة بأمان داخل حسابك.">
+  <meta property="og:url" content="https://mmssuu76-tech.github.io/geo-rafidain/research-projects.html">
+  <meta property="og:image" content="https://mmssuu76-tech.github.io/geo-rafidain/assets/geo-rafidain-pwa-512.png">
+  <title>مشاريعي البحثية | جيو الرافدين</title>
+  <link rel="icon" href="assets/geo-rafidain.ico" sizes="any">
+  <link rel="apple-touch-icon" href="assets/geo-rafidain-icon.png">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="stylesheet" href="styles.css?v=20261001-projects">
+  <link rel="stylesheet" href="research-projects.css?v=20261001-projects">
+</head>
+<body class="projects-page">
+  <a class="skip-link" href="#main">انتقل إلى المحتوى</a>
+  <header class="site-header scrolled" id="top">
+    <div class="container nav-wrap">
+      <a class="brand" href="index.html" aria-label="جيو الرافدين - الصفحة الرئيسية"><span class="brand-mark" aria-hidden="true"><img src="assets/iraq-mark.svg" alt=""></span><span><strong>جيو الرافدين</strong><small>GeoRafidain</small></span></a>
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="main-nav" aria-label="فتح القائمة"><span></span><span></span><span></span></button>
+      <nav class="main-nav" id="main-nav" aria-label="التنقل الرئيسي"><a href="index.html">الرئيسية</a><a href="research-hub.html">بوابة الباحث</a><a class="current" href="research-projects.html" aria-current="page">مشاريعي</a><a href="data-library.html">مكتبة البيانات</a><a href="research-planner.html">مخطط الدراسة</a><a href="research-guides.html">أدلة الباحث</a><a href="research-quality.html">تدقيق الجودة</a><a href="dashboard.html">طلباتي</a><a class="button button-small" href="index.html#request">اطلب خدمة</a></nav>
+    </div>
+  </header>
+
+  <main id="main">
+    <section class="projects-hero">
+      <div class="projects-grid-lines" aria-hidden="true"></div>
+      <div class="container projects-hero-layout">
+        <div>
+          <p class="eyebrow"><span></span> مساحة خاصة مرتبطة بحسابك</p>
+          <h1>مشاريعك البحثية.<br><em>محفوظة بين أجهزتك.</em></h1>
+          <p>أنشئ مساحة لكل دراسة، واحفظ نسخة من المخطط والمصادر والأدلة وتدقيق الجودة، ثم افتحها بأمان من جهاز آخر.</p>
+          <div class="hero-actions"><a class="button" href="#projects-workspace">إدارة المشاريع</a><a class="text-link" href="research-hub.html">العودة إلى بوابة الباحث <span>←</span></a></div>
+        </div>
+        <aside class="cloud-trust" aria-label="خصائص الحفظ السحابي">
+          <span class="cloud-icon" aria-hidden="true">☁</span>
+          <h2>مزامنة بإذن الباحث</h2>
+          <p>لا تُرفع المسودة تلقائيًا. أنت تختار المشروع ووقت حفظ النسخة السحابية أو استعادتها.</p>
+          <ul><li>حساب محمي برابط تسجيل الدخول</li><li>كل باحث يرى مشاريعه فقط</li><li>نسخة محلية تستمر دون اتصال</li></ul>
+        </aside>
+      </div>
+    </section>
+
+    <section class="projects-workspace" id="projects-workspace">
+      <div class="container">
+        <div class="local-snapshot" id="local-snapshot">
+          <div><span>مساحة هذا الجهاز</span><h2 id="local-project-title">مشروع بحثي جديد</h2><p id="local-project-detail">جارٍ قراءة أدوات الباحث المحفوظة محليًا...</p></div>
+          <div class="local-score"><strong id="local-progress">0%</strong><span>تقدم محلي</span></div>
+        </div>
+
+        <section class="account-gate" id="account-gate">
+          <div class="gate-copy"><span>01</span><div><p class="eyebrow dark"><span></span> حساب الباحث</p><h2>سجّل الدخول لعرض مشاريعك.</h2><p>سنرسل رابطًا آمنًا إلى بريدك. لا تحتاج إلى حفظ كلمة مرور جديدة داخل المنصة.</p></div></div>
+          <form id="projects-login-form" novalidate>
+            <label for="projects-email">البريد الإلكتروني</label>
+            <div><input id="projects-email" type="email" autocomplete="email" inputmode="email" required placeholder="name@example.com"><button type="submit">إرسال رابط الدخول</button></div>
+            <small>استخدم البريد نفسه الذي تتابع به طلبات الخدمات.</small>
+          </form>
+        </section>
+
+        <section class="migration-gate" id="migration-gate" hidden>
+          <span aria-hidden="true">!</span><div><h2>تحتاج مساحة المشاريع إلى تفعيل قاعدة البيانات</h2><p>واجهة المشاريع جاهزة، لكن جدول المشاريع الآمن لم يُفعّل بعد في Supabase.</p></div><a href="supabase/research-workspaces.sql" download>تنزيل ملف التفعيل SQL</a>
+        </section>
+
+        <section class="projects-account" id="projects-account" hidden>
+          <header class="projects-account-header"><div><span>حساب الباحث</span><strong id="projects-account-email"></strong></div><div><button type="button" id="projects-refresh">تحديث</button><button type="button" id="projects-sign-out">تسجيل الخروج</button></div></header>
+
+          <div class="projects-layout">
+            <section class="create-project-card" aria-labelledby="create-project-title">
+              <p class="eyebrow dark"><span></span> مشروع جديد</p>
+              <h2 id="create-project-title">أنشئ مساحة مستقلة لدراستك.</h2>
+              <p>يمكنك تضمين حالة أدوات الباحث الحالية لتصبح أول نسخة سحابية للمشروع.</p>
+              <form id="create-project-form" novalidate>
+                <label>عنوان المشروع<input id="new-project-title" type="text" minlength="3" maxlength="160" required placeholder="مثال: تحليل تغير الغطاء الأرضي في ذي قار"></label>
+                <div class="form-row"><label>مرحلة الدراسة<select id="new-project-stage"><option value="idea">الفكرة</option><option value="planning" selected>التخطيط</option><option value="data_collection">جمع البيانات</option><option value="analysis">التحليل</option><option value="writing">الكتابة</option><option value="review">المراجعة</option><option value="completed">مكتملة</option></select></label><label>منطقة الدراسة<input id="new-project-area" type="text" maxlength="240" placeholder="اختياري"></label></div>
+                <label>وصف مختصر<textarea id="new-project-summary" rows="3" maxlength="1200" placeholder="موضوع الدراسة وهدفها الرئيس..."></textarea></label>
+                <label class="include-local"><input id="include-local-workspace" type="checkbox" checked><span><b>تضمين بيانات هذا الجهاز</b><small>المخطط والمصادر والأدلة وتدقيق الجودة فقط.</small></span></label>
+                <button class="create-project-button" type="submit">إنشاء المشروع وحفظ النسخة</button>
+              </form>
+            </section>
+
+            <section class="project-list-card" aria-labelledby="project-list-title">
+              <div class="list-heading"><div><p class="eyebrow dark"><span></span> المساحات السحابية</p><h2 id="project-list-title">مشاريعي</h2></div><span id="projects-count">0 مشروع</span></div>
+              <div class="projects-list" id="projects-list"><div class="projects-loading"><span></span><p>جارٍ تحميل المشاريع...</p></div></div>
+            </section>
+          </div>
+        </section>
+
+        <p class="projects-status" id="projects-status" role="status" aria-live="polite"></p>
+      </div>
+    </section>
+
+    <section class="sync-explainer">
+      <div class="container">
+        <div class="sync-heading"><p class="eyebrow"><span></span> آلية آمنة وواضحة</p><h2>أنت تتحكم في اتجاه المزامنة.</h2><p>تجنبًا لاستبدال عملك دون قصد، لا يحدث النقل بين الجهاز والسحابة إلا عند الضغط على الإجراء المناسب.</p></div>
+        <ol><li><b>01</b><h3>اعمل محليًا</h3><p>استخدم المخطط والمكتبة والتدقيق حتى دون اتصال.</p></li><li><b>02</b><h3>احفظ إلى السحابة</h3><p>ارفع لقطة محدثة إلى المشروع الذي تختاره.</p></li><li><b>03</b><h3>افتح على جهاز آخر</h3><p>استعد النسخة بعد معاينة التاريخ والمرحلة.</p></li></ol>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer projects-footer"><div class="container footer-main"><a class="brand footer-brand" href="index.html"><span class="brand-mark" aria-hidden="true"><img src="assets/iraq-mark.svg" alt=""></span><span><strong>جيو الرافدين</strong><small>بيانات مكانية، رؤية أعمق</small></span></a><div class="footer-links"><a href="index.html">الرئيسية</a><a href="research-hub.html">بوابة الباحث</a><a href="research-projects.html">مشاريعي</a><a href="data-library.html">مكتبة البيانات</a><a href="research-planner.html">مخطط الدراسة</a><a href="research-guides.html">أدلة الباحث</a><a href="research-quality.html">تدقيق الجودة</a><a href="dashboard.html">لوحة المتابعة</a><a href="privacy.html">الخصوصية</a><a href="terms.html">شروط الاستخدام</a></div><a class="footer-cta" href="index.html#request">ابدأ طلباً جديداً <span>←</span></a></div><div class="container footer-bottom"><span>© <span id="year"></span> جيو الرافدين. جميع الحقوق محفوظة.</span><a href="mailto:mmssuu76@gmail.com">mmssuu76@gmail.com</a></div></footer>
+
+  <script src="vendor/supabase-2.108.2.min.js"></script>
+  <script src="backend-config.js"></script>
+  <script src="backend.js?v=20261001-projects"></script>
+  <script src="research-projects.js?v=20261001-projects"></script>
+  <script src="pwa.js?v=20261001-projects"></script>
+</body>
+</html>

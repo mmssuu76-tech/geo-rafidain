@@ -456,6 +456,65 @@
     return data || [];
   };
 
+  const researchStages = new Set(['idea', 'planning', 'data_collection', 'analysis', 'writing', 'review', 'completed']);
+
+  const validateResearchProject = values => {
+    const title = String(values.title || '').trim();
+    const summary = String(values.summary || '').trim() || null;
+    const studyArea = String(values.studyArea || '').trim() || null;
+    const stage = String(values.stage || 'planning');
+    const workspaceData = values.workspaceData && typeof values.workspaceData === 'object' && !Array.isArray(values.workspaceData)
+      ? values.workspaceData
+      : {};
+    if (title.length < 3 || title.length > 160) throw new Error('INVALID_RESEARCH_PROJECT_TITLE');
+    if (summary && summary.length > 1200) throw new Error('RESEARCH_PROJECT_SUMMARY_TOO_LONG');
+    if (studyArea && studyArea.length > 240) throw new Error('RESEARCH_PROJECT_STUDY_AREA_TOO_LONG');
+    if (!researchStages.has(stage)) throw new Error('INVALID_RESEARCH_PROJECT_STAGE');
+    if (new Blob([JSON.stringify(workspaceData)]).size > 900000) throw new Error('RESEARCH_PROJECT_DATA_TOO_LARGE');
+    return { title, summary, study_area: studyArea, stage, workspace_data: workspaceData };
+  };
+
+  const listResearchProjects = async () => {
+    await requireUser();
+    const { data, error } = await client
+      .from('research_projects')
+      .select('id,user_id,title,summary,study_area,stage,workspace_data,version,created_at,updated_at')
+      .order('updated_at', { ascending: false })
+      .limit(50);
+    if (error) throw error;
+    return data || [];
+  };
+
+  const createResearchProject = async values => {
+    const user = await requireUser();
+    const project = validateResearchProject(values);
+    const { data, error } = await client
+      .from('research_projects')
+      .insert({ ...project, user_id: user.id })
+      .select('id,user_id,title,summary,study_area,stage,workspace_data,version,created_at,updated_at')
+      .single();
+    if (error) throw error;
+    return data;
+  };
+
+  const updateResearchProject = async (id, values, expectedVersion) => {
+    await requireUser();
+    if (!/^[0-9a-f-]{36}$/i.test(String(id || ''))) throw new Error('INVALID_RESEARCH_PROJECT_ID');
+    const version = Number(expectedVersion);
+    if (!Number.isInteger(version) || version < 1) throw new Error('INVALID_RESEARCH_PROJECT_VERSION');
+    const project = validateResearchProject(values);
+    const { data, error } = await client
+      .from('research_projects')
+      .update(project)
+      .eq('id', id)
+      .eq('version', version)
+      .select('id,user_id,title,summary,study_area,stage,workspace_data,version,created_at,updated_at')
+      .maybeSingle();
+    if (error) throw error;
+    if (!data) throw new Error('RESEARCH_PROJECT_CONFLICT');
+    return data;
+  };
+
   const listAdminResources = async () => {
     await requireUser();
     const { data, error } = await client
@@ -562,6 +621,9 @@
     deleteRequest,
     createFileLink,
     createDeliverableLink,
+    listResearchProjects,
+    createResearchProject,
+    updateResearchProject,
     listPublishedResources,
     listAdminResources,
     adminUpsertResource,

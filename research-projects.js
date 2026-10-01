@@ -20,6 +20,8 @@
   let projects = [];
   let localSnapshot = null;
   let currentUser = null;
+  let statusTimer = null;
+  const savingProjects = new Set();
 
   const readJSON = (key, fallback = null) => {
     try {
@@ -71,8 +73,13 @@
   }
 
   function showStatus(message, isError = false) {
+    window.clearTimeout(statusTimer);
     status.textContent = message;
     status.classList.toggle('error', isError);
+    status.classList.remove('visible');
+    void status.offsetWidth;
+    status.classList.add('visible');
+    statusTimer = window.setTimeout(() => status.classList.remove('visible'), isError ? 10000 : 6500);
   }
 
   function setBusy(button, busy, label = '') {
@@ -247,6 +254,9 @@
     }
 
     if (action === 'save') {
+      if (savingProjects.has(project.id) || button.dataset.saving === 'true') return;
+      savingProjects.add(project.id);
+      button.dataset.saving = 'true';
       setBusy(button, true, 'جارٍ الحفظ...');
       try {
         refreshLocalSummary();
@@ -258,18 +268,23 @@
           workspaceData: localSnapshot
         }, project.version);
         projects = projects.map(item => item.id === updated.id ? updated : item);
-        localStorage.setItem(KEYS.active, JSON.stringify({ id: updated.id, title: updated.title, version: updated.version, updatedAt: updated.updated_at }));
         renderProjects();
-        showStatus(`تم حفظ نسخة هذا الجهاز في «${updated.title}».`);
+        try {
+          localStorage.setItem(KEYS.active, JSON.stringify({ id: updated.id, title: updated.title, version: updated.version, updatedAt: updated.updated_at }));
+        } catch (_) {}
+        showStatus(`تم الحفظ بنجاح في «${updated.title}» — الإصدار ${updated.version}.`);
       } catch (error) {
         if (error?.message === 'RESEARCH_PROJECT_CONFLICT') {
           showStatus('توجد نسخة أحدث من جهاز آخر. حدّث القائمة قبل الحفظ لتجنب فقدانها.', true);
           await loadProjects();
         } else {
+          console.error('Research project save failed:', error);
           showStatus('تعذر حفظ النسخة السحابية. حاول مرة أخرى.', true);
         }
       } finally {
-        setBusy(button, false);
+        savingProjects.delete(project.id);
+        delete button.dataset.saving;
+        if (button.isConnected) setBusy(button, false);
       }
     }
   });

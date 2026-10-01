@@ -92,8 +92,10 @@
 .project-actions button { min-height: 37px; border: 1px solid #cad6d1; border-radius: 8px 8px 8px 3px; padding: 7px 10px; color: var(--forest); background: white; cursor: pointer; font: inherit; font-size: 9px; font-weight: 900; }
 .project-actions button.primary { color: white; border-color: var(--forest); background: var(--forest); }
 .project-actions button:disabled { cursor: wait; opacity: .5; }
-.projects-status { min-height: 24px; margin: 14px 2px 0; color: #4f806f; font-size: 11px; }
-.projects-status.error { color: #9c452f; }
+.projects-status { display: none; margin: 0; color: #e9fff6; font-size: 12px; font-weight: 800; line-height: 1.7; }
+.projects-status.visible:not(:empty) { display: block; position: fixed; z-index: 1000; right: 50%; bottom: 24px; width: min(520px, calc(100% - 32px)); padding: 13px 18px; border: 1px solid rgba(255,255,255,.2); border-radius: 12px; background: #123f38; box-shadow: 0 16px 40px rgba(18,63,56,.24); transform: translateX(50%); animation: project-status-in .22s ease-out; }
+.projects-status.error { color: #fff5f1; background: #8d3d2c !important; }
+@keyframes project-status-in { from { opacity: 0; transform: translate(50%, 8px); } to { opacity: 1; transform: translate(50%, 0); } }
 
 .sync-explainer { padding: 95px 0 110px; color: white; background: linear-gradient(145deg,#123f38,#072923); }
 .sync-heading { display: grid; grid-template-columns: 1fr .8fr; gap: 60px; align-items: end; margin-bottom: 35px; }

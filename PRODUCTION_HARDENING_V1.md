@@ -28,6 +28,10 @@ If any Storage deletion fails, the parent `service_requests` record must remain 
 - Edge Function reports `scanned`, `deleted`, `failed`, `failures`, and `cutoff`.
 - No secret or service-role key is added to frontend code.
 
+### Required dry-run gate
+
+Before each live retention cleanup, call the Edge Function with `POST` and `?dry_run=1`, using the same `Authorization: Bearer <secret>` header required for live cleanup. Inspect the aggregate response (`dry_run: true`, `scanned`, `request_files`, `request_deliverables`, `cutoff`) and compare the eligible count and cutoff with the retention queue. Dry run reads at most 100 eligible requests and performs no Storage or database deletion; it never returns request IDs or object paths. Only after this review and the test-request integration checks pass should the function be called without `dry_run=1` or scheduled for live cleanup.
+
 ## Next tasks
 - PHV1-002: Enforce MFA/AAL2 for administrators.
 - PHV1-003: Enable Turnstile before public launch.

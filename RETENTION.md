@@ -15,6 +15,16 @@
 
 لا تضع `SUPABASE_SERVICE_ROLE_KEY` أو `RETENTION_CRON_SECRET` في ملفات الموقع العامة.
 
+## صلاحيات قاعدة البيانات
+
+تحتاج دالة `retention-cleanup`، عند اتصالها بدور `service_role`، إلى `USAGE` على مخطط `public`، و`SELECT` و`DELETE` على `service_requests`، و`SELECT` على جدولي `request_files` و`request_deliverables`. طبّق `supabase/retention-cleanup-permissions.sql` بعد إنشاء الجداول؛ يعرض الاستعلام الأخير فيه نتيجة تحقق read-only لهذه الصلاحيات الأربع. لا يغيّر الملف سياسات RLS ولا يمنح صلاحيات أخرى. يجب أن تظهر قيم التحقق الأربع `true` قبل تشغيل المعاينة أو الحذف الفعلي.
+
+## المعاينة الآمنة قبل الحذف
+
+قبل كل تشغيل حذف فعلي، أرسل طلب `POST` إلى عنوان الدالة مع المعامل `?dry_run=1` وبالعنوان `Authorization: Bearer <secret>`. يبقى التحقق من `RETENTION_CRON_SECRET` إلزامياً في وضع المعاينة أيضاً. لا يبدأ أي حذف في هذا الوضع؛ تعيد الدالة فقط `dry_run: true` و`scanned` و`request_files` و`request_deliverables` و`cutoff`، دون معرفات الطلبات أو مسارات الملفات.
+
+راجع الأعداد وتاريخ `cutoff` وقارنها مع `admin_retention_queue` قبل تشغيل الدالة من دون `dry_run=1`. تعاين الدالة الدفعة الحالية فقط، وبحد أقصى 100 طلب في كل تشغيل. لا تُفعّل مهمة مجدولة للحذف الفعلي قبل نجاح المعاينة والاختبار على طلبات تجريبية.
+
 ## نتيجة التشغيل
 
 تعيد الدالة:
@@ -28,20 +38,23 @@
 ## التفعيل بعد النشر
 
 1. طبّق `supabase/security-hardening.sql` وبقية ترحيلات التواصل والتسليم.
-2. انشر الدالة باسم `retention-cleanup`.
-3. أنشئ `RETENTION_CRON_SECRET` ضمن أسرار Edge Functions.
-4. شغّل الدالة مرة يومياً بطلب `POST` يحتوي `Authorization: Bearer <secret>`.
-5. راقب `failed` و`failures` في كل تشغيل.
-6. تعالج كل مرة 100 طلب كحد أقصى.
+2. طبّق `supabase/retention-cleanup-permissions.sql` وتحقق من ظهور `true` في أعمدة التحقق الأربع.
+3. انشر الدالة باسم `retention-cleanup`.
+4. أنشئ `RETENTION_CRON_SECRET` ضمن أسرار Edge Functions.
+5. نفّذ المعاينة بـ`POST .../retention-cleanup?dry_run=1` وتحقق من الأعداد و`cutoff` قبل تشغيل الحذف الفعلي.
+6. شغّل الدالة مرة يومياً بطلب `POST` من دون `dry_run=1` ويحتوي `Authorization: Bearer <secret>`.
+7. راقب `failed` و`failures` في كل تشغيل.
+8. تعالج كل مرة 100 طلب كحد أقصى.
 
 ## اختبار ما قبل التفعيل
 
 1. أنشئ طلب اختبار مع ملف في `request-files`.
 2. أضف ملف تسليم في `request-deliverables`.
 3. اجعل الطلب `completed` واضبط `completed_at` إلى تاريخ أقدم من 90 يوماً.
-4. شغّل `retention-cleanup`.
-5. تحقق أن `deleted = 1` و`failed = 0`.
-6. تحقق من اختفاء الكائنات من الحاويتين وسجل الطلب.
-7. اختبر فشل تخزين متعمد وتأكد أن سجل `service_requests` يبقى موجوداً.
+4. شغّل `retention-cleanup?dry_run=1` أولاً وتحقق من `scanned` وأعداد الملفات والتاريخ من دون حذف.
+5. شغّل `retention-cleanup` فعلياً بعد مراجعة المعاينة.
+6. تحقق أن `deleted = 1` و`failed = 0`.
+7. تحقق من اختفاء الكائنات من الحاويتين وسجل الطلب.
+8. اختبر فشل تخزين متعمد وتأكد أن سجل `service_requests` يبقى موجوداً.
 
 لا تُفعّل الجدولة على بيانات حقيقية قبل أخذ نسخة احتياطية تجريبية والتحقق من `admin_retention_queue`.

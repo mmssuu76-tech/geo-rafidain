@@ -39,6 +39,20 @@ Deno.serve(async (request) => {
 
   if (readError) return json({ error: 'read_failed', detail: readError.message }, 500)
 
+  const dueRequests = (requests || []) as RetentionRequest[]
+  if (new URL(request.url).searchParams.getAll('dry_run').includes('1')) {
+    const countPaths = (rows: StorageRow[] | null | undefined) =>
+      (rows || []).filter((row) => Boolean(row.object_path)).length
+
+    return json({
+      dry_run: true,
+      scanned: dueRequests.length,
+      request_files: dueRequests.reduce((total, item) => total + countPaths(item.request_files), 0),
+      request_deliverables: dueRequests.reduce((total, item) => total + countPaths(item.request_deliverables), 0),
+      cutoff,
+    })
+  }
+
   const failures: Array<{ requestId: string; stage: FailureStage; detail: string }> = []
   let deleted = 0
 
@@ -52,7 +66,7 @@ Deno.serve(async (request) => {
     return error
   }
 
-  for (const item of (requests || []) as RetentionRequest[]) {
+  for (const item of dueRequests) {
     const deliverableError = await removeStorageObjects(
       'request-deliverables',
       item.request_deliverables,

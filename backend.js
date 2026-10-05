@@ -410,20 +410,27 @@
     const profile = await getProfile();
     if (profile?.role !== 'admin') throw new Error('ADMIN_REQUIRED');
 
-    const { data: fileRows, error: fileError } = await client
-      .from('request_files')
-      .select('object_path')
-      .eq('request_id', id);
-    if (fileError) throw fileError;
+    const [fileResult, deliverableResult] = await Promise.all([
+      client.from('request_files').select('object_path').eq('request_id', id),
+      client.from('request_deliverables').select('object_path').eq('request_id', id)
+    ]);
+    if (fileResult.error) throw fileResult.error;
+    if (deliverableResult.error) throw deliverableResult.error;
 
-    const paths = (fileRows || []).map(item => item.object_path);
-    if (paths.length) {
-      const { error: storageError } = await client.storage.from('request-files').remove(paths);
-      if (storageError) throw storageError;
-    }
+    const removeStorageObjects = async (bucket, rows) => {
+      const paths = (rows || []).map(item => item.object_path).filter(Boolean);
+      if (!paths.length) return;
+      const { error } = await client.storage.from(bucket).remove(paths);
+      if (error) throw error;
+    };
 
-    const { error } = await client.from('service_requests').delete().eq('id', id);
-    if (error) throw error;
+    // Remove physical objects before deleting the parent record.
+    // If a storage operation fails, keep the database row so cleanup can be retried.
+    await removeStorageObjects('request-deliverables', deliverableResult.data);
+    await removeStorageObjects('request-files', fileResult.data);
+
+    const { error: deleteError } = await client.from('service_requests').delete().eq('id', id);
+    if (deleteError) throw deleteError;
   };
 
   const createFileLink = async objectPath => {

@@ -18,6 +18,8 @@ If any Storage deletion fails, the parent `service_requests` record must remain 
 ### Files
 - `backend.js`
 - `supabase/functions/retention-cleanup/index.ts`
+- `supabase/config.toml`
+- `supabase/retention-cleanup-permissions.sql`
 - `RETENTION.md`
 - `PRODUCTION_HARDENING_V1.md`
 

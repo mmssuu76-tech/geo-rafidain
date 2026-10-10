@@ -35,6 +35,7 @@ Deno.serve(async (request) => {
     .select('id,request_files(object_path),request_deliverables(object_path)')
     .eq('status', 'completed')
     .lt('completed_at', cutoff)
+    .order('completed_at', { ascending: true })
     .limit(100)
 
   if (readError) return json({ error: 'read_failed', detail: readError.message }, 500)
@@ -93,16 +94,26 @@ Deno.serve(async (request) => {
       continue
     }
 
-    const { error: deleteError } = await admin
+    const { data: deletedRows, error: deleteError } = await admin
       .from('service_requests')
       .delete()
       .eq('id', item.id)
+      .select('id')
 
     if (deleteError) {
       failures.push({
         requestId: item.id,
         stage: 'database',
         detail: deleteError.message,
+      })
+      continue
+    }
+
+    if (!deletedRows || deletedRows.length !== 1) {
+      failures.push({
+        requestId: item.id,
+        stage: 'database',
+        detail: 'no_row_deleted',
       })
       continue
     }

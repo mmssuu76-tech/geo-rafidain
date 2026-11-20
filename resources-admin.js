@@ -187,7 +187,7 @@
       const profile = await backend.getProfile();
       if (profile?.role !== 'admin') { showGate('وصول غير مصرح', 'هذه الصفحة مخصصة لمدير جيو الرافدين فقط.', 'dashboard.html', 'العودة إلى لوحة المتابعة'); return; }
       const assurance = await backend.getMfaAssurance();
-      if (assurance.nextLevel === 'aal2' && assurance.currentLevel !== 'aal2') {
+      if (assurance.currentLevel !== 'aal2') {
         showGate('يلزم رمز المصادقة الثنائية', 'أكمل التحقق الآمن قبل إدارة المصادر المنشورة.', 'security.html', 'إكمال التحقق الآمن');
         return;
       }

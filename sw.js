@@ -1,5 +1,5 @@
-const GEO_RAFIDAIN_CACHE = 'geo-rafidain-static-v22';
-const NETWORK_FIRST_EXTENSIONS = new Set(['.html', '.css', '.js', '.json', '.webmanifest']);
+const GEO_RAFIDAIN_CACHE = 'geo-rafidain-static-v23';
+
 
 const APP_SHELL = [
   './',
@@ -42,6 +42,7 @@ const APP_SHELL = [
   './security.js',
   './study-map.js',
   './backend.js',
+  './supabase/functions/_shared/request-paths.mjs',
   './backend-config.js',
   './manifest.webmanifest',
   './assets/geo-rafidain.ico',
@@ -55,6 +56,8 @@ const APP_SHELL = [
   './vendor/supabase-2.108.2.min.js'
 ];
 
+const shellUrls = new Set(APP_SHELL.map(path => new URL(path, self.registration.scope).href));
+
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(GEO_RAFIDAIN_CACHE)
@@ -67,7 +70,7 @@ self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys()
       .then(keys => Promise.all(keys
-        .filter(key => key !== GEO_RAFIDAIN_CACHE)
+        .filter(key => key.startsWith('geo-rafidain-static-') && key !== GEO_RAFIDAIN_CACHE)
         .map(key => caches.delete(key))))
       .then(() => self.clients.claim())
   );
@@ -78,46 +81,29 @@ self.addEventListener('fetch', event => {
   if (request.method !== 'GET') return;
 
   const requestUrl = new URL(request.url);
-  if (requestUrl.origin !== self.location.origin) return;
-
-  if (request.mode === 'navigate') {
-    event.respondWith(
-      fetch(request)
-        .then(response => {
-          const copy = response.clone();
-          caches.open(GEO_RAFIDAIN_CACHE).then(cache => cache.put(request, copy));
-          return response;
-        })
-        .catch(() => caches.match(request).then(response => response || caches.match('./index.html')))
-    );
-    return;
+  const cacheKey = new URL(requestUrl);
+  if (requestUrl.search) {
+    const versions = requestUrl.searchParams.getAll('v');
+    const versionedAsset = /\.(?:js|css)$/.test(requestUrl.pathname) &&
+      requestUrl.searchParams.size === 1 && versions.length === 1 &&
+      /^[a-zA-Z0-9_-]{1,64}$/.test(versions[0]);
+    if (!versionedAsset) return;
+    cacheKey.search = '';
   }
+  if (requestUrl.hash || !shellUrls.has(cacheKey.href)) return;
 
-  const extension = requestUrl.pathname.includes('.')
-    ? `.${requestUrl.pathname.split('.').pop().toLowerCase()}`
-    : '';
-
-  if (NETWORK_FIRST_EXTENSIONS.has(extension)) {
-    event.respondWith(
-      fetch(request)
-        .then(response => {
-          if (!response || response.status !== 200) return response;
-          const copy = response.clone();
-          caches.open(GEO_RAFIDAIN_CACHE).then(cache => cache.put(request, copy));
-          return response;
-        })
-        .catch(() => caches.match(request))
-    );
-    return;
-  }
-
-  event.respondWith(
-    caches.match(request)
-      .then(cached => cached || fetch(request).then(response => {
-        if (!response || response.status !== 200) return response;
-        const copy = response.clone();
-        caches.open(GEO_RAFIDAIN_CACHE).then(cache => cache.put(request, copy));
-        return response;
-      }))
-  );
+  event.respondWith((async () => {
+    const cache = await caches.open(GEO_RAFIDAIN_CACHE);
+    try {
+      const response = await fetch(request);
+      if (response.ok && response.type === 'basic' && !response.redirected) {
+        try { await cache.put(cacheKey.href, response.clone()); } catch { /* Network response remains usable. */ }
+      }
+      return response;
+    } catch (error) {
+      const cached = await cache.match(cacheKey.href);
+      if (cached) return cached;
+      throw error;
+    }
+  })());
 });

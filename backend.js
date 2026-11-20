@@ -410,12 +410,12 @@
     const profile = await getProfile();
     if (profile?.role !== 'admin') throw new Error('ADMIN_REQUIRED');
 
-    const [fileResult, deliverableResult] = await Promise.all([
-      client.from('request_files').select('object_path').eq('request_id', id),
-      client.from('request_deliverables').select('object_path').eq('request_id', id)
-    ]);
-    if (fileResult.error) throw fileResult.error;
-    if (deliverableResult.error) throw deliverableResult.error;
+    const { data: request, error } = await client.from('service_requests')
+      .select('id,user_id,request_files(object_path),request_deliverables(object_path)')
+      .eq('id', id).single();
+    if (error) throw error;
+    const { validRequestPaths } = await import('./supabase/functions/_shared/request-paths.mjs');
+    if (!validRequestPaths(request)) throw new Error('INVALID_STORAGE_METADATA');
 
     const removeStorageObjects = async (bucket, rows) => {
       const paths = (rows || []).map(item => item.object_path).filter(Boolean);
@@ -426,8 +426,8 @@
 
     // Remove physical objects before deleting the parent record.
     // If a storage operation fails, keep the database row so cleanup can be retried.
-    await removeStorageObjects('request-deliverables', deliverableResult.data);
-    await removeStorageObjects('request-files', fileResult.data);
+    await removeStorageObjects('request-deliverables', request.request_deliverables);
+    await removeStorageObjects('request-files', request.request_files);
 
     const { error: deleteError } = await client.from('service_requests').delete().eq('id', id);
     if (deleteError) throw deleteError;

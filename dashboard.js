@@ -1010,10 +1010,10 @@
         document.querySelector('#security-link').hidden = false;
         document.querySelector('#resources-admin-link').hidden = false;
         const assurance = await backend.getMfaAssurance();
-        if (assurance.nextLevel === 'aal2' && assurance.currentLevel !== 'aal2') {
+        if (assurance.currentLevel !== 'aal2') {
           showGate(
             'يلزم رمز المصادقة الثنائية',
-            'حساب المدير محمي. أدخل الرمز من تطبيق المصادقة لإكمال فتح لوحة الإدارة.',
+            'حساب المدير محمي. افتح صفحة الأمان لتفعيل المصادقة الثنائية أو إكمال التحقق.',
             'security.html',
             'إكمال التحقق الآمن'
           );

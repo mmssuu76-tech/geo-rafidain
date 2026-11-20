@@ -882,7 +882,11 @@
       clearPanelError();
       render();
       showNotice('تم حفظ تحديث الطلب وإتاحته للعميل.');
-    } catch {
+    } catch (error) {
+      if (error?.message?.includes('RETENTION_IN_PROGRESS')) {
+        showPanelError('بدأ تنظيف ملفات هذا الطلب بعد انتهاء مدة الاحتفاظ. يتعذر تعديل حالته أثناء التنظيف.');
+        return;
+      }
       showPanelError('تعذر حفظ التحديث. تحقق من القيم وصلاحية جلسة المدير ثم حاول مجدداً.');
     } finally {
       button.disabled = false;

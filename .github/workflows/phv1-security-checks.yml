@@ -23,6 +23,17 @@ jobs:
     name: SQL and JS security regression
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_DB: retention_ci
+          POSTGRES_PASSWORD: local_fixture
+        ports:
+          - 5432:5432
+        options: --health-cmd pg_isready --health-interval 5s --health-timeout 3s --health-retries 10
+    env:
+      RETENTION_TEST_DATABASE: postgresql://postgres:local_fixture@127.0.0.1:5432/retention_ci
     steps:
       - name: Check out repository without persisted credentials
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2

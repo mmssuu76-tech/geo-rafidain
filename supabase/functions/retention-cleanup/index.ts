@@ -1,13 +1,16 @@
 import { createClient } from 'npm:@supabase/supabase-js@2'
 
+import { validRequestPaths } from '../_shared/request-paths.mjs'
+
 type StorageRow = { object_path: string }
 type RetentionRequest = {
   id: string
+  user_id: string
   request_files?: StorageRow[] | null
   request_deliverables?: StorageRow[] | null
 }
 
-type FailureStage = 'request-deliverables' | 'request-files' | 'database'
+type FailureStage = 'metadata' | 'request-deliverables' | 'request-files' | 'database'
 
 const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), {
   status,
@@ -32,7 +35,7 @@ Deno.serve(async (request) => {
   const cutoff = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString()
   const { data: requests, error: readError } = await admin
     .from('service_requests')
-    .select('id,request_files(object_path),request_deliverables(object_path)')
+    .select('id,user_id,request_files(object_path),request_deliverables(object_path)')
     .eq('status', 'completed')
     .lt('completed_at', cutoff)
     .order('completed_at', { ascending: true })
@@ -47,6 +50,7 @@ Deno.serve(async (request) => {
 
     return json({
       dry_run: true,
+      invalid_metadata: dueRequests.filter(item => !validRequestPaths(item)).length,
       scanned: dueRequests.length,
       request_files: dueRequests.reduce((total, item) => total + countPaths(item.request_files), 0),
       request_deliverables: dueRequests.reduce((total, item) => total + countPaths(item.request_deliverables), 0),
@@ -68,6 +72,10 @@ Deno.serve(async (request) => {
   }
 
   for (const item of dueRequests) {
+    if (!validRequestPaths(item)) {
+      failures.push({ requestId: item.id, stage: 'metadata', detail: 'invalid_storage_metadata' })
+      continue
+    }
     const deliverableError = await removeStorageObjects(
       'request-deliverables',
       item.request_deliverables,

@@ -1,0 +1,56 @@
+{
+  "source": "Supabase read-only list_migrations + schema_migrations SELECT",
+  "reviewed_on": "2026-11-20",
+  "production_project_ref": "nrvewrdwmonlzamsvdjm",
+  "applied": [
+    {
+      "version": "20261105231916",
+      "name": "require_aal2_for_admin_mfa_ok",
+      "applied_to_production": true,
+      "current_status": "superseded_by_20261120140209",
+      "statement_count": 1,
+      "snapshot_path": "ops/applied-migrations/20261105231916_require_aal2_for_admin_mfa_ok.sql",
+      "sha256": "084ddf52db7fa7ac661897017e793d5e16921c3f26dd8210f36230e458f07978"
+    },
+    {
+      "version": "20261120140151",
+      "name": "scope_new_request_attachment_paths",
+      "applied_to_production": true,
+      "current_status": "applied",
+      "statement_count": 1,
+      "snapshot_path": "ops/applied-migrations/20261120140151_scope_new_request_attachment_paths.sql",
+      "sha256": "e47ddff1cb24b3b1b80223606cd34449f051af213775f0ba8776b5e4711d78c0"
+    },
+    {
+      "version": "20261120140209",
+      "name": "require_verified_factor_for_admin_aal2",
+      "applied_to_production": true,
+      "current_status": "applied_current",
+      "statement_count": 1,
+      "snapshot_path": "ops/applied-migrations/20261120140209_require_verified_factor_for_admin_aal2.sql",
+      "sha256": "c174600f6581d16c1823c175c41865542d59b8cd1b8df556a50fd8e151000fd6"
+    },
+    {
+      "version": "20261120140210",
+      "name": "validate_request_attachment_paths",
+      "applied_to_production": true,
+      "current_status": "applied_validated",
+      "statement_count": 1,
+      "snapshot_path": "ops/applied-migrations/20261120140210_validate_request_attachment_paths.sql",
+      "sha256": "bcaa351932314fb145f62cf2740fbc3fdc03216a91792f72a4c78b9d81fbb8c7"
+    }
+  ],
+  "pending": [
+    {
+      "fix": "PHV1-FIX-003",
+      "review_path": "ops/pending/notification-mfa.sql",
+      "applied_to_production": false
+    },
+    {
+      "fix": "PHV1-FIX-004",
+      "review_path": "ops/pending/attachment-path-hardening.sql",
+      "applied_to_production": false
+    }
+  ],
+  "note": "Evidence only; not a complete production schema baseline; do not replay."
+}

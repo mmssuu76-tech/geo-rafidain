@@ -57,11 +57,12 @@ security definer
 set search_path = ''
 as $$
   select
-    not exists (
+    (select auth.uid()) is not null
+    and exists (
       select 1 from auth.mfa_factors
       where user_id = (select auth.uid()) and status = 'verified'
     )
-    or coalesce((select auth.jwt()->>'aal'), 'aal1') = 'aal2';
+    and coalesce((select auth.jwt()->>'aal'), 'aal1') = 'aal2';
 $$;
 
 revoke all on function private.admin_mfa_ok() from public, anon, service_role;

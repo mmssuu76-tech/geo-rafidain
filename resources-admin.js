@@ -186,8 +186,8 @@
       if (!user) { showGate('تسجيل الدخول مطلوب', 'سجّل الدخول بحساب المدير من المنصة ثم عد إلى هذه الصفحة.', 'index.html', 'العودة إلى المنصة'); return; }
       const profile = await backend.getProfile();
       if (profile?.role !== 'admin') { showGate('وصول غير مصرح', 'هذه الصفحة مخصصة لمدير جيو الرافدين فقط.', 'dashboard.html', 'العودة إلى لوحة المتابعة'); return; }
-      const assurance = await backend.getMfaAssurance();
-      if (assurance.nextLevel === 'aal2' && assurance.currentLevel !== 'aal2') {
+      const mfaState = await backend.getAdminMfaState();
+      if (!mfaState.ready) {
         showGate('يلزم رمز المصادقة الثنائية', 'أكمل التحقق الآمن قبل إدارة المصادر المنشورة.', 'security.html', 'إكمال التحقق الآمن');
         return;
       }

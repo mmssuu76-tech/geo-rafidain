@@ -1,0 +1,1 @@
+set local lock_timeout='2s'; alter table public.request_files add constraint request_files_scoped_object_path check (split_part(object_path,'/',1)=owner_id::text and split_part(object_path,'/',2)=request_id::text and object_path ~ '^[^/]+/[^/]+/[A-Za-z0-9_-][A-Za-z0-9._-]*$') not valid;

@@ -58,3 +58,9 @@
 8. اختبر فشل تخزين متعمد وتأكد أن سجل `service_requests` يبقى موجوداً.
 
 لا تُفعّل الجدولة على بيانات حقيقية قبل أخذ نسخة احتياطية تجريبية والتحقق من `admin_retention_queue`.
+
+## Deploying the claim-based worker
+
+Suspend external and database cleanup schedules, and drain earlier invocations before switching versions. Apply the reviewed notification and attachment policies and then ops/pending/retention-claim.sql. Deploy the matching retention-cleanup source and its shared validator. Before resuming live invocations, use the authenticated dry run, compare its eligibility counts with the database, and verify the installed RPC permissions. The dry run previews registered metadata. A live claim also discovers unregistered Storage objects inside the exact request prefix.
+
+Once claimed, a request remains frozen even when the worker stops. After 30 minutes another invocation may take ownership, enumerate remaining objects and retry. A stale worker cannot finalize a newer claim. Preserve the row on Storage failure. Do not clear claims manually or revert to a worker that deletes by request ID alone. To suspend processing, leave cleanup invocations disabled.

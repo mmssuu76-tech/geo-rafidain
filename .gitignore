@@ -4,3 +4,5 @@
 *.secrets
 service-role*
 service_role*
+
+node_modules/

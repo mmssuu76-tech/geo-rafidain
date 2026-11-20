@@ -882,7 +882,11 @@
       clearPanelError();
       render();
       showNotice('تم حفظ تحديث الطلب وإتاحته للعميل.');
-    } catch {
+    } catch (error) {
+      if (error?.message?.includes('RETENTION_IN_PROGRESS')) {
+        showPanelError('بدأ تنظيف ملفات هذا الطلب بعد انتهاء مدة الاحتفاظ. يتعذر تعديل حالته أثناء التنظيف.');
+        return;
+      }
       showPanelError('تعذر حفظ التحديث. تحقق من القيم وصلاحية جلسة المدير ثم حاول مجدداً.');
     } finally {
       button.disabled = false;
@@ -1009,11 +1013,11 @@
       if (profile.role === 'admin') {
         document.querySelector('#security-link').hidden = false;
         document.querySelector('#resources-admin-link').hidden = false;
-        const assurance = await backend.getMfaAssurance();
-        if (assurance.nextLevel === 'aal2' && assurance.currentLevel !== 'aal2') {
+        const mfaState = await backend.getAdminMfaState();
+        if (!mfaState.ready) {
           showGate(
             'يلزم رمز المصادقة الثنائية',
-            'حساب المدير محمي. أدخل الرمز من تطبيق المصادقة لإكمال فتح لوحة الإدارة.',
+            'حساب المدير محمي. افتح صفحة الأمان لتفعيل المصادقة الثنائية أو إكمال التحقق.',
             'security.html',
             'إكمال التحقق الآمن'
           );

@@ -33,18 +33,21 @@ Deno.serve(async (request) => {
   })
 
   const cutoff = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString()
-  const { data: requests, error: readError } = await admin
+  const dryRun = new URL(request.url).searchParams.getAll('dry_run').includes('1')
+  let query = admin
     .from('service_requests')
     .select('id,user_id,request_files(object_path),request_deliverables(object_path)')
     .eq('status', 'completed')
     .lt('completed_at', cutoff)
     .order('completed_at', { ascending: true })
     .limit(100)
+  if (!dryRun) query = query.or(`retention_lease_until.is.null,retention_lease_until.lt.${new Date().toISOString()}`)
+  const { data: requests, error: readError } = await query
 
   if (readError) return json({ error: 'read_failed', detail: readError.message }, 500)
 
   const dueRequests = (requests || []) as RetentionRequest[]
-  if (new URL(request.url).searchParams.getAll('dry_run').includes('1')) {
+  if (dryRun) {
     const countPaths = (rows: StorageRow[] | null | undefined) =>
       (rows || []).filter((row) => Boolean(row.object_path)).length
 
@@ -66,12 +69,20 @@ Deno.serve(async (request) => {
     rows: StorageRow[] | null | undefined,
   ) => {
     const paths = (rows || []).map((row) => row.object_path).filter(Boolean)
-    if (!paths.length) return null
-    const { error } = await admin.storage.from(bucket).remove(paths)
-    return error
+    for (let offset = 0; offset < paths.length; offset += 500) {
+      const { error } = await admin.storage.from(bucket).remove(paths.slice(offset, offset + 500))
+      if (error) return error
+    }
+    return null
   }
 
-  for (const item of dueRequests) {
+  for (const candidate of dueRequests) {
+    const { data: item, error: claimError } = await admin.rpc('claim_retention_request', { p_id: candidate.id })
+    if (claimError) {
+      failures.push({ requestId: candidate.id, stage: 'database', detail: claimError.message })
+      continue
+    }
+    if (!item) continue
     if (!validRequestPaths(item)) {
       failures.push({ requestId: item.id, stage: 'metadata', detail: 'invalid_storage_metadata' })
       continue
@@ -102,11 +113,9 @@ Deno.serve(async (request) => {
       continue
     }
 
-    const { data: deletedRows, error: deleteError } = await admin
-      .from('service_requests')
-      .delete()
-      .eq('id', item.id)
-      .select('id')
+    const { data: finalized, error: deleteError } = await admin.rpc('finish_retention_request', {
+      p_id: item.id, p_token: item.token,
+    })
 
     if (deleteError) {
       failures.push({
@@ -117,7 +126,7 @@ Deno.serve(async (request) => {
       continue
     }
 
-    if (!deletedRows || deletedRows.length !== 1) {
+    if (finalized !== true) {
       failures.push({
         requestId: item.id,
         stage: 'database',

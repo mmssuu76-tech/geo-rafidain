@@ -1,4 +1,4 @@
-const GEO_RAFIDAIN_CACHE = 'geo-rafidain-static-v23';
+const GEO_RAFIDAIN_CACHE = 'geo-rafidain-static-v24';
 
 
 const APP_SHELL = [

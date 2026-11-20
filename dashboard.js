@@ -1009,8 +1009,8 @@
       if (profile.role === 'admin') {
         document.querySelector('#security-link').hidden = false;
         document.querySelector('#resources-admin-link').hidden = false;
-        const assurance = await backend.getMfaAssurance();
-        if (assurance.currentLevel !== 'aal2') {
+        const mfaState = await backend.getAdminMfaState();
+        if (!mfaState.ready) {
           showGate(
             'يلزم رمز المصادقة الثنائية',
             'حساب المدير محمي. افتح صفحة الأمان لتفعيل المصادقة الثنائية أو إكمال التحقق.',

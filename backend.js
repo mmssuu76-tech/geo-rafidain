@@ -602,6 +602,19 @@
     return data;
   };
 
+  // UI gate only: database RLS/RPC remain the authorization authority.
+  const getAdminMfaState = async () => {
+    await requireUser();
+    const assurance = await getMfaAssurance();
+    const factors = await listMfaFactors();
+    if (!Array.isArray(factors?.all)) throw new Error('MFA_FACTORS_UNAVAILABLE');
+    const verifiedFactors = factors.all.filter(factor => factor?.status === 'verified');
+    const ready = assurance?.currentLevel === 'aal2'
+      && assurance?.nextLevel === 'aal2'
+      && verifiedFactors.length > 0;
+    return { assurance, factors, verifiedFactors, ready };
+  };
+
   const enrollTotp = async () => {
     await requireUser();
     const { data, error } = await client.auth.mfa.enroll({
@@ -674,6 +687,7 @@
     adminSetResourcePublished,
     getMfaAssurance,
     listMfaFactors,
+    getAdminMfaState,
     enrollTotp,
     verifyTotp,
     removeMfaFactor

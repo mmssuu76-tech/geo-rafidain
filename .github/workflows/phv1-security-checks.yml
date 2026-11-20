@@ -1,0 +1,57 @@
+name: PHV1 security checks
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - 'hardening/**'
+      - hardening-foundation-review
+  workflow_dispatch:
+
+# No secrets, deployments, privileged database access, or repository writes.
+permissions:
+  contents: read
+
+concurrency:
+  group: phv1-security-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  security-checks:
+    name: SQL and JS security regression
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out repository without persisted credentials
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install locked dependencies without lifecycle scripts
+        run: npm ci --ignore-scripts
+
+      - name: Validate repository JavaScript syntax
+        shell: bash
+        run: |
+          while IFS= read -r -d '' file; do
+            node --check "$file"
+          done < <(git ls-files -z -- '*.js' '*.mjs' ':!:vendor/**')
+
+      - name: Check all changes against main for whitespace errors
+        shell: bash
+        run: |
+          git fetch --no-tags origin main
+          base="$(git merge-base origin/main HEAD)"
+          git diff --check "$base" HEAD
+
+      - name: Run complete PGlite and JavaScript security regression tests
+        run: node --test --test-reporter=tap tests/*.test.mjs

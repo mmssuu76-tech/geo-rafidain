@@ -18,6 +18,17 @@
     status.className = `security-status${type ? ` ${type}` : ''}`;
   };
 
+  const clearEnrollmentSecrets = () => {
+    qrImage.removeAttribute('src');
+    qrImage.hidden = true;
+    secretOutput.textContent = '';
+    secretOutput.hidden = true;
+    manualHelp.hidden = true;
+    enrollDetails.hidden = true;
+    document.querySelector('#enroll-code').value = '';
+    document.querySelector('#challenge-code').value = '';
+  };
+
   const validCode = input => /^[0-9]{6}$/.test(input.value.trim());
 
   const verify = async (input, button) => {
@@ -30,10 +41,19 @@
     setStatus('جارٍ التحقق...');
     try {
       await backend.verifyTotp(activeFactorId, input.value.trim());
-      setStatus('تم التحقق بنجاح.', 'success');
+      clearEnrollmentSecrets();
+      activeFactorId = '';
       enrollPanel.hidden = true;
       challengePanel.hidden = true;
-      completePanel.hidden = false;
+      completePanel.hidden = true;
+      try {
+        const state = await backend.getAdminMfaState();
+        if (!state.ready) throw new Error('ADMIN_MFA_NOT_READY');
+        setStatus('تم التحقق بنجاح.', 'success');
+        completePanel.hidden = false;
+      } catch {
+        setStatus('تم قبول الرمز، لكن تعذر تأكيد الجلسة الآمنة. أعد تحميل الصفحة قبل المتابعة.', 'error');
+      }
     } catch {
       setStatus('الرمز غير صحيح أو انتهت صلاحيته. انتظر رمزاً جديداً وحاول مرة أخرى.', 'error');
     } finally {
@@ -48,10 +68,15 @@
     button.disabled = true;
     setStatus('جارٍ إنشاء رمز الربط...');
     try {
-      const factors = await backend.listMfaFactors();
-      for (const factor of factors.totp || []) {
-        if (factor.status !== 'verified') await backend.removeMfaFactor(factor.id);
+      const state = await backend.getAdminMfaState();
+      if (state.verifiedFactors.length || state.assurance?.currentLevel !== 'aal1'
+          || state.assurance?.nextLevel !== 'aal1') {
+        setStatus('تعذر بدء تفعيل جديد. أعد تحميل الصفحة أو أكمل التحقق من العامل الموجود.', 'error');
+        button.disabled = false;
+        return;
       }
+      // Do not delete factors automatically; a failed/racing enrollment may require recovery.
+      clearEnrollmentSecrets();
       const factor = await backend.enrollTotp();
       if (!factor?.id || !factor?.totp?.qr_code) throw new Error('TOTP_QR_MISSING');
       activeFactorId = factor.id;
@@ -70,10 +95,10 @@
       const message = /disabled|not enabled|mfa.*off/i.test(details)
         ? 'المصادقة بتطبيق TOTP غير مفعّلة في مشروع Supabase. فعّلها من إعدادات Authentication ثم أعد تحميل الصفحة.'
         : /already exists|factor.*exist/i.test(details)
-        ? 'يوجد عامل مصادقة سابق. أعد تحميل الصفحة، ثم أدخل الرمز الحالي من تطبيق المصادقة.'
+        ? 'يوجد عامل مصادقة سابق. أعد تحميل الصفحة أو اطلب استعادة الوصول بطريقة آمنة.'
         : /network|fetch/i.test(details)
           ? 'تعذر الاتصال بخدمة المصادقة. تحقق من الإنترنت ثم حاول مجدداً.'
-          : `تعذر إنشاء رمز الربط. أعد تحميل الصفحة وحاول مجدداً.${details ? ` (${details})` : ''}`;
+          : 'تعذر إنشاء رمز الربط. أعد تحميل الصفحة وحاول مجدداً.';
       setStatus(message, 'error');
       button.disabled = false;
     } finally {
@@ -95,21 +120,22 @@
       const profile = await backend.getProfile();
       if (profile?.role !== 'admin') { window.location.replace('dashboard.html'); return; }
 
-      const [assurance, factors] = await Promise.all([
-        backend.getMfaAssurance(),
-        backend.listMfaFactors()
-      ]);
+      const state = await backend.getAdminMfaState();
       loading.hidden = true;
-      const verified = (factors.totp || []).find(factor => factor.status === 'verified');
+      const verifiedTotp = state.verifiedFactors.find(factor => factor.factor_type === 'totp');
 
-      if (assurance.currentLevel === 'aal2') {
+      if (state.ready) {
         completePanel.hidden = false;
-      } else if (verified && assurance.nextLevel === 'aal2') {
-        activeFactorId = verified.id;
+      } else if (verifiedTotp && state.assurance?.currentLevel === 'aal1'
+          && state.assurance?.nextLevel === 'aal2') {
+        activeFactorId = verifiedTotp.id;
         challengePanel.hidden = false;
-      } else {
+      } else if (!state.verifiedFactors.length && state.assurance?.currentLevel === 'aal1'
+          && state.assurance?.nextLevel === 'aal1') {
         enrollPanel.hidden = false;
-        await startEnrollment();
+        // Explicit user action starts enrollment; no automatic factor creation.
+      } else {
+        setStatus('الجلسة غير جاهزة أو عامل المصادقة غير مدعوم في هذه الصفحة. سجّل الخروج ثم الدخول من جديد، أو اطلب استعادة الوصول.', 'error');
       }
     } catch {
       loading.innerHTML = '<h2>تعذر التحقق</h2><p>تحقق من الاتصال ثم أعد تحميل الصفحة.</p>';

@@ -36,7 +36,7 @@ test('retention serializes reopen, uploads and competing workers and resumes par
         grant usage on schema private,storage to authenticated;
         grant insert on storage.objects to authenticated;
         create policy fixture_upload on storage.objects for insert to authenticated with check(true);`);
-      await a.query(await readFile(new URL('../ops/pending/retention-claim.sql', import.meta.url), 'utf8'));
+      await a.query(await readFile(new URL('../ops/applied-migrations/20261120234235_phv1_retention_atomic_claim.sql', import.meta.url), 'utf8'));
       await a.query("insert into public.service_requests values ($1,$2,'completed',now()-interval '91 days',null,null)", [id,owner]);
       await a.query('begin');
       await a.query("update public.service_requests set status='reviewing' where id=$1",[id]);

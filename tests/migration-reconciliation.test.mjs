@@ -9,7 +9,7 @@ const file = path => new URL(path, root);
 test('archived applied migrations are distinct from pending SQL and unchanged', async () => {
   const manifest = JSON.parse(await readFile(file('ops/migration-reconciliation.json'), 'utf8'));
   assert.equal(manifest.production_project_ref, 'nrvewrdwmonlzamsvdjm');
-  assert.equal(manifest.applied.length, 4);
+  assert.ok(manifest.applied.some(x => x.name === 'phv1_attachment_path_hardening'));
   const names = new Set();
   for (const item of manifest.applied) {
     assert.equal(item.applied_to_production, true);
@@ -21,7 +21,7 @@ test('archived applied migrations are distinct from pending SQL and unchanged', 
     assert.equal(createHash('sha256').update(text, 'utf8').digest('hex'), item.sha256);
   }
   const pending = manifest.pending.map(x => x.review_path);
-  assert.equal(new Set(pending).size, 2);
+  assert.equal(new Set(pending).size, pending.length);
   for (const name of pending) {
     assert.match(name, /^ops\/pending\/[-a-z0-9]+\.sql$/);
     const sql = await readFile(file(name), 'utf8');

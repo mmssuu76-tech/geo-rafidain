@@ -66,3 +66,6 @@ jobs:
 
       - name: Run complete PGlite and JavaScript security regression tests
         run: node --test --test-reporter=tap tests/*.test.mjs
+
+      - name: Run retention preview Python unit tests (offline)
+        run: python3 -m unittest discover -s tests -p test_retention_preview.py -v

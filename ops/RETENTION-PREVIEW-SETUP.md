@@ -11,7 +11,7 @@
 - No `SUPABASE_SERVICE_ROLE_KEY`, service tokens, data-changing SQL or cleanup RPCs in Actions. Only the deployed function can read the production tables.
 - A run fails closed if authentication fails, response exceeds 16 KiB, a redirect occurs, `dry_run` is not `true`, any unexpected fields (e.g. request ID) appear, counts are invalid, or cutoff is not approximately 90 days ago. Only aggregate fields are logged. Any `invalid_metadata > 0` fails the run. The preview is limited to 100 rows; 100 means more rows might exist.
 - The preview result is **not** an independent database comparison. Match the preview `scanned`, `request_files`, `request_deliverables`, and `cutoff` to a contemporaneous read-only query before enabling the schedule. Small timing drift may exist for requests crossing the cutoff.
-- This workflow **must never** be used to remove the maintenance block in production function v10 or to authorize live deletion. Real retention requires a separate explicit approval, backup, staging test, and rollback plan.
+- This workflow **must never** be used to remove the maintenance block in the production Edge Function or to authorize live deletion. PHV1-FIX-011 keeps the non-deletion guard in repository source and checks it in CI. Actual cleanup requires separate explicit approval, backup, staging test, and rollback plan.
 
 ## Install safely
 
@@ -40,4 +40,4 @@ gh pr create --repo mmssuu76-tech/geo-rafidain --base main --head hardening/rete
 
 ## Before approving live deletion
 
-Confirm that production is still on edge function version 10 with maintenance protection and that no older schedulers exist outside the repo. Document independent data counts and any `invalid_metadata` or database authorization failures. A successful scheduled preview does **not** authorize destructive operations.
+Verify that the *currently deployed* Edge Function (not an assumed version number) still contains the maintenance guard and that no older schedulers exist outside the repo. Document independent data counts and any `invalid_metadata` or database authorization failures. A successful scheduled preview does **not** authorize destructive operations.

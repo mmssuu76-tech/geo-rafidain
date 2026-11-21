@@ -74,15 +74,15 @@ async function catalog(db) {
   return { policies, defs, permissions };
 }
 
-test('pending SQL can upgrade a pre-fix schema and matches fresh security definitions', async () => {
+test('archived SQL can upgrade a pre-fix schema and matches fresh security definitions', async () => {
   const upgraded = await bootstrap(true);
   let fresh;
   try {
-    for (const name of ['notification-mfa','attachment-path-hardening']) {
-      const source = await sql('ops/pending/' + name + '.sql');
+    for (const name of ['20261121203845_phv1_notification_mfa','20261121203937_phv1_attachment_path_hardening']) {
+      const source = await sql('ops/applied-migrations/' + name + '.sql');
       assert.match(source, /REVIEW ONLY/);
       try { await upgraded.exec(source); }
-      catch (error) { throw new Error(`pending/${name}: ${error.message}`); }
+      catch (error) { throw new Error(`applied/${name}: ${error.message}`); }
     }
     fresh = await bootstrap(false);
     const fromUpgrade = await catalog(upgraded);
@@ -107,8 +107,8 @@ test('pending SQL can upgrade a pre-fix schema and matches fresh security defini
 test('upgraded storage helper rejects cross-request and stale-admin access', async () => {
   const db = await bootstrap(true);
   try {
-    await db.exec(await sql('ops/pending/notification-mfa.sql'));
-    await db.exec(await sql('ops/pending/attachment-path-hardening.sql'));
+    await db.exec(await sql('ops/applied-migrations/20261121203845_phv1_notification_mfa.sql'));
+    await db.exec(await sql('ops/applied-migrations/20261121203937_phv1_attachment_path_hardening.sql'));
     const a = '00000000-0000-4000-8000-000000000001';
     const b = '00000000-0000-4000-8000-000000000002';
     const admin = '00000000-0000-4000-8000-000000000003';

@@ -1,6 +1,6 @@
 {
   "source": "Supabase read-only list_migrations + schema_migrations SELECT",
-  "reviewed_on": "2026-11-20",
+  "reviewed_on": "2026-11-21",
   "production_project_ref": "nrvewrdwmonlzamsvdjm",
   "applied": [
     {
@@ -38,19 +38,35 @@
       "statement_count": 1,
       "snapshot_path": "ops/applied-migrations/20261120140210_validate_request_attachment_paths.sql",
       "sha256": "bcaa351932314fb145f62cf2740fbc3fdc03216a91792f72a4c78b9d81fbb8c7"
-    }
-  ],
-  "pending": [
-    {
-      "fix": "PHV1-FIX-003",
-      "review_path": "ops/pending/notification-mfa.sql",
-      "applied_to_production": false
     },
     {
-      "fix": "PHV1-FIX-004",
-      "review_path": "ops/pending/attachment-path-hardening.sql",
-      "applied_to_production": false
+      "version": "20261120234235",
+      "name": "phv1_retention_atomic_claim",
+      "applied_to_production": true,
+      "current_status": "applied",
+      "statement_count": 1,
+      "snapshot_path": "ops/applied-migrations/20261120234235_phv1_retention_atomic_claim.sql",
+      "sha256": "ecf873162177fcf301340bec9665589e96c3bad8ed2c99b0b17999e20fd9b362"
+    },
+    {
+      "version": "20261121203845",
+      "name": "phv1_notification_mfa",
+      "applied_to_production": true,
+      "current_status": "applied",
+      "statement_count": 1,
+      "snapshot_path": "ops/applied-migrations/20261121203845_phv1_notification_mfa.sql",
+      "sha256": "21e554efb1c68861dfe80739f62d232fd1221c90743284f425923ed47bd20066"
+    },
+    {
+      "version": "20261121203937",
+      "name": "phv1_attachment_path_hardening",
+      "applied_to_production": true,
+      "current_status": "applied",
+      "statement_count": 1,
+      "snapshot_path": "ops/applied-migrations/20261121203937_phv1_attachment_path_hardening.sql",
+      "sha256": "6272b342201255d60b176d411804adc19dcfb72360864638a024966fbe1f86fc"
     }
   ],
+  "pending": [],
   "note": "Evidence only; not a complete production schema baseline; do not replay."
 }

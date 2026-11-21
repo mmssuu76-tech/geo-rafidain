@@ -18,7 +18,8 @@ test('archived applied migrations are distinct from pending SQL and unchanged', 
     assert.ok(!names.has(item.version));
     names.add(item.version);
     const text = await readFile(file(item.snapshot_path), 'utf8');
-    assert.equal(createHash('sha256').update(text, 'utf8').digest('hex'), item.sha256);
+    // Windows may check out SQL text with CRLF; validate canonical LF content without altering archived files.
+    assert.equal(createHash('sha256').update(text.replace(/\r\n/g, '\n'), 'utf8').digest('hex'), item.sha256);
   }
   const pending = manifest.pending.map(x => x.review_path);
   assert.equal(new Set(pending).size, pending.length);

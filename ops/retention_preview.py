@@ -101,8 +101,11 @@ def main() -> int:
     except PreviewError as exc:
         print("RETENTION_PREVIEW_FAILED=" + str(exc), file=sys.stderr)
         return 1
-    except Exception:
-        print("RETENTION_PREVIEW_FAILED=unexpected_error", file=sys.stderr)
+    except Exception as exc:
+        kind = type(exc).__name__
+        if kind not in {"ValueError", "UnicodeEncodeError", "TypeError", "InvalidURL", "HTTPException", "InvalidHeader", "BadStatusLine", "RemoteDisconnected", "AttributeError", "RuntimeError", "KeyError"}:
+            kind = "Other"
+        print("RETENTION_PREVIEW_FAILED=unexpected_error_class_" + kind, file=sys.stderr)
         return 1
 
     summary = (

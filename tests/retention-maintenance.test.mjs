@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs';
 
 // PHV1-FIX-011: fail CI if a future refactor makes non-dry-run cleanup reachable.
 // This intentionally asserts the deployed maintenance contract verbatim.
-const source = readFileSync(new URL('../supabase/functions/retention-cleanup/index.ts', import.meta.url), 'utf8');
+const source = readFileSync(new URL('../supabase/functions/retention-cleanup/index.ts', import.meta.url), 'utf8').replace(/\r\n/g, '\n');
 const assignment = "  const dryRun = new URL(request.url).searchParams.getAll('dry_run').includes('1')";
 const guard = "  if (!dryRun) return json({ error: 'retention_maintenance' }, 503)";
 const firstQuery = '  let query = admin';

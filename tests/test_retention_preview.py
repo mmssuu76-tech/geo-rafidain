@@ -101,6 +101,16 @@ class RetentionPreviewTests(unittest.TestCase):
                     self.assertEqual(preview.main(), 1)
                 self.assertNotIn("client-sensitive-value", stderr.getvalue())
 
+    def test_unexpected_exception_type_is_sanitized(self):
+        secret = "do-not-log-123-example"
+        with patch.dict("os.environ", {"RETENTION_CRON_SECRET": secret}):
+            with patch.object(preview, "request_preview", side_effect=ValueError(secret)):
+                stderr = io.StringIO()
+                with patch("sys.stderr", stderr):
+                    self.assertEqual(preview.main(), 1)
+                self.assertIn("unexpected_error_class_ValueError", stderr.getvalue())
+                self.assertNotIn(secret, stderr.getvalue())
+
 
 if __name__ == "__main__":
     unittest.main()

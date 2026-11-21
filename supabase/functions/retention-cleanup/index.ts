@@ -34,6 +34,7 @@ Deno.serve(async (request) => {
 
   const cutoff = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString()
   const dryRun = new URL(request.url).searchParams.getAll('dry_run').includes('1')
+  if (!dryRun) return json({ error: 'retention_maintenance' }, 503)
   let query = admin
     .from('service_requests')
     .select('id,user_id,request_files(object_path),request_deliverables(object_path)')

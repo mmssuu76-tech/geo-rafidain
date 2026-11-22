@@ -4,6 +4,7 @@ on:
   pull_request:
     branches:
       - main
+      - agents/dev-review-readonly-v1
   push:
     branches:
       - 'hardening/**'
@@ -72,3 +73,6 @@ jobs:
 
       - name: Run read-only development agent policy tests (offline)
         run: python3 -m unittest discover -s tests -p test_agent_workspace.py -v
+
+      - name: Run A1 reviewed-snapshot and access-gate tests (offline)
+        run: python3 -m unittest discover -s tests -p test_agent_review_snapshot.py -v

@@ -23,7 +23,7 @@ this agent has capabilities not explicitly present in its tool list.
 """
 
 
-def build_agent(workspace: ReadOnlyWorkspace):
+def build_agent(workspace: ReadOnlyWorkspace, *, model: str | None = None):
     """Create an SDK agent with only three read-only function tools."""
     from agents import Agent, function_tool  # optional pinned dependency
 
@@ -52,4 +52,5 @@ def build_agent(workspace: ReadOnlyWorkspace):
         name="Geo Rafidain — Read-only Development Reviewer",
         instructions=INSTRUCTIONS,
         tools=[list_repository_files, read_repository_file, inspect_test_inventory],
+        **({"model": model} if model else {}),
     )

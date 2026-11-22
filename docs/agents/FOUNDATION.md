@@ -38,7 +38,7 @@ Entry point: `agent_service/geo_rafidain_agents/cli.py`.
 
 1. Run the offline policy tests with no API key: `python -m unittest discover -s tests -p test_agent_workspace.py -v`.
 2. Set `PYTHONPATH=agent_service` and run `python -m geo_rafidain_agents.cli --repo . --self-check` on a local snapshot. Verify `execution_status` is `NOT_RUN`.
-   For a future model-assisted review, first create a sanitized snapshot and explicitly select approved file paths, e.g. `--task "Review this module" --allow-file src/safe_module.py`. This still requires a separately approved API key and isolated environment.
+   For model-assisted review, follow `docs/agents/A1_REVIEW_ISOLATION.md` for offline bundle creation, SHA-256 verification, explicit approval, and sandboxed model calls. `--task` now refuses live repositories or bundles without a verified manifest.
 3. Open a PR against `main`; the existing PHV1 workflow must pass, plus the new agent policy tests after applying the optional CI patch.
 4. Verify no frontend production file, SQL migration, secret, Supabase configuration, or deployment flow changed.
 5. Only then evaluate model-assisted review with an approved API key in an isolated environment. This kit does not prove an API-backed SDK run or production readiness.
@@ -48,3 +48,9 @@ Entry point: `agent_service/geo_rafidain_agents/cli.py`.
 Build a separate `GIS Job API` with verified identities, a `job_id`, `tenant_id`, `request_id`, `operation` allowlist, cost limit, and immutable file references rather than arbitrary filesystem paths. Store status and provenance; run GDAL/GeoPandas/Rasterio/GEE in isolated workers. A validator must check `CRS/EPSG`, input provenance and license, scene count, cloud masks, NoData coverage, pixel scale, study boundary and outputs. Do not run user Python or SQL directly from prompts. The execution service—not the LLM—must enforce tenant authorization, resource quotas and approval for external operations. For GEE, verify commercial-use terms before offering paid processing.
 
 Future order: (A1) read-only GIS metadata inspector → (A2) sandboxed analytical jobs on synthetic datasets → (A3) approval-gated production integration. Do not introduce multi-agent handoffs before A1/A2 acceptance gates are met.
+
+## A1: model-review isolation (additive change)
+
+See `docs/agents/A1_REVIEW_ISOLATION.md`. Snapshot preparation and preflight are pure offline operations.
+Any live SDK/model request is explicitly opt-in, needs an isolated service/VM, and remains **unverified by this change**.
+A1 changes neither production deployment nor database permissions.

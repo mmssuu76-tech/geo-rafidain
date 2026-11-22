@@ -322,16 +322,23 @@
     return Array.isArray(data) ? data[0] : data;
   };
 
-  const listRequestMessages = async requestId => {
+  const listRequestMessages = async (requestId, before = null) => {
     await requireUser();
-    const { data, error } = await client
+    let query = client
       .from('request_messages')
       .select('id,request_id,sender_id,sender_role,body,created_at')
       .eq('request_id', requestId)
-      .order('created_at', { ascending: true })
-      .limit(200);
+      .order('created_at', { ascending: false })
+      .order('id', { ascending: false });
+    if (before) {
+      const { created_at, id } = before;
+      if (!/^[0-9T:+.Z-]+$/.test(created_at) || !/^[0-9a-f-]{36}$/i.test(id)) throw new Error('INVALID_MESSAGE_CURSOR');
+      query = query.or(`created_at.lt.${created_at},and(created_at.eq.${created_at},id.lt.${id})`);
+    }
+    const { data, error } = await query.limit(201);
     if (error) throw error;
-    return data || [];
+    const rows = data || [];
+    return { messages: rows.slice(0, 200).reverse(), hasOlder: rows.length > 200 };
   };
 
   const sendRequestMessage = async (requestId, body) => {

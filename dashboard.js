@@ -329,6 +329,7 @@
     </section>
     <section class="detail-field full conversation-workspace" aria-labelledby="conversation-title">
       <div class="workspace-heading"><div><small>تواصل مرتبط بالطلب</small><h3 id="conversation-title">المحادثة</h3></div><span>محفوظة داخل الحساب</span></div>
+      <button type="button" id="older-messages" hidden>عرض الرسائل الأقدم</button>
       <div class="messages-list" id="messages-list" aria-live="polite"><p class="workspace-loading">جارٍ تحميل الرسائل...</p></div>
       <div class="message-composer">
         <label for="message-body">رسالة جديدة</label>
@@ -377,18 +378,27 @@
     if (composer) composer.hidden = true;
   };
 
+  let workspaceVersion = 0;
+  let visibleMessages = [];
   const loadRequestWorkspace = async requestId => {
+    const version = ++workspaceVersion;
+    const older = document.querySelector('#older-messages');
+    if (older) older.hidden = true;
     try {
       const [messages, deliverables] = await Promise.all([
         backend.listRequestMessages(requestId),
         backend.listRequestDeliverables(requestId)
       ]);
+      if (version !== workspaceVersion || requestId !== selectedId) return;
       communicationAvailable = true;
-      renderMessages(messages);
+      visibleMessages = messages.messages;
+      renderMessages(visibleMessages);
+      if (older) { older.hidden = !messages.hasOlder; older.disabled = false; }
       renderDeliverables(deliverables);
       const composer = document.querySelector('.message-composer');
       if (composer) composer.hidden = false;
     } catch (error) {
+      if (version !== workspaceVersion || requestId !== selectedId) return;
       if (communicationFeatureMissing(error)) showWorkspaceUnavailable();
       else {
         const messageContainer = document.querySelector('#messages-list');
@@ -658,6 +668,26 @@
   });
 
   document.querySelector('#dialog-content').addEventListener('click', async event => {
+    const older = event.target.closest('#older-messages');
+    if (older) {
+      const version = workspaceVersion;
+      older.disabled = true;
+      try {
+        const page = await backend.listRequestMessages(selectedId, visibleMessages[0]);
+        if (version !== workspaceVersion || !older.isConnected) return;
+        const list = document.querySelector('#messages-list');
+        const offset = list.scrollHeight - list.scrollTop;
+        visibleMessages = page.messages.concat(visibleMessages);
+        renderMessages(visibleMessages);
+        list.scrollTop = list.scrollHeight - offset;
+        older.hidden = !page.hasOlder;
+      } catch {
+        if (version === workspaceVersion) showNotice('تعذر تحميل الرسائل الأقدم. أعد المحاولة.', 'error');
+      } finally {
+        if (version === workspaceVersion) older.disabled = false;
+      }
+      return;
+    }
     const decisionButton = event.target.closest('.quote-decision');
     if (decisionButton) {
       const decision = decisionButton.dataset.decision;

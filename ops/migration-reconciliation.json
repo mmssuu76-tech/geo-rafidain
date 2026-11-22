@@ -1,6 +1,6 @@
 {
   "source": "Supabase read-only list_migrations + schema_migrations SELECT",
-  "reviewed_on": "2026-11-21",
+  "reviewed_on": "2026-11-22",
   "production_project_ref": "nrvewrdwmonlzamsvdjm",
   "applied": [
     {
@@ -65,6 +65,15 @@
       "statement_count": 1,
       "snapshot_path": "ops/applied-migrations/20261121203937_phv1_attachment_path_hardening.sql",
       "sha256": "6272b342201255d60b176d411804adc19dcfb72360864638a024966fbe1f86fc"
+    },
+    {
+      "version": "20261122140914",
+      "name": "resumable_admin_delete",
+      "applied_to_production": true,
+      "current_status": "applied",
+      "statement_count": 1,
+      "snapshot_path": "ops/applied-migrations/20261122140914_resumable_admin_delete.sql",
+      "sha256": "9596d88b9961e5a404f9c8b931abc0a2ef5ce873a5486b5107342eb70bb44b7c"
     }
   ],
   "pending": [],

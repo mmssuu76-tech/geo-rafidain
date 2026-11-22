@@ -1,0 +1,4 @@
+# Narrow build context. Never transmit source checkout, .env, SSH keys or assets.
+*
+!Dockerfile
+!sandbox_probe.py

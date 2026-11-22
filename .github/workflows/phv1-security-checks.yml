@@ -6,6 +6,7 @@ on:
       - main
       - agents/dev-review-readonly-v1
       - agents/review-isolation-a1
+      - agents/secure-runtime-policy-a2-1
   push:
     branches:
       - 'hardening/**'
@@ -80,3 +81,30 @@ jobs:
 
       - name: Run A2.1 offline runtime policy preflight tests
         run: python3 -m unittest discover -s tests -p test_agent_runtime_policy.py -v
+
+      - name: Run A2.2 offline sandbox contract tests
+        run: python3 -m unittest discover -s tests -p test_agent_sandbox_a2_2.py -v
+
+  a2-2-container-probe:
+    # Docker engine is a privileged trusted CI service: never invoke this job
+    # for forked/untrusted PRs. No secrets or write permissions are available.
+    if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
+    name: A2.2 offline Linux container isolation smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - name: Check out repository without persisted credentials
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+
+      - name: Verify offline probe contract without Docker
+        run: python3 agent_service/runtime_deployment/sandbox_smoke.py --check-only
+
+      - name: Prefetch pinned public base image outside the network-free sandbox
+        run: docker pull python:3.12-slim-bookworm@sha256:935c3c5b12357a7e10caa9c1e6ca5692344d97cf229832ef584be2cec9fc03df
+
+      - name: Verify effective Docker isolation with synthetic files only
+        run: python3 agent_service/runtime_deployment/sandbox_smoke.py --run-docker

@@ -18,9 +18,18 @@ test('CI workflow is read-only, uses immutable actions, and executes security te
   assert.match(source, /node --test --test-reporter=tap tests\/\*\.test\.mjs/);
   assert.match(source, /git merge-base origin\/main HEAD/);
   const actions = [...source.matchAll(/^\s*uses: ([^\s#]+)/gm)].map(x => x[1]);
-  assert.equal(actions.length, 2);
-  assert.match(actions[0], /^actions\/checkout@[a-f0-9]{40}$/);
-  assert.match(actions[1], /^actions\/setup-node@[a-f0-9]{40}$/);
+  // A2.2 adds a second pinned checkout for its isolated Docker probe.
+  // Keep the exact reviewed action set, not just a count of arbitrary actions.
+  assert.deepEqual(actions, [
+    'actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683',
+    'actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020',
+    'actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683',
+  ]);
+  // Docker may be invoked only for a same-repository PR; no fork-provided code.
+  assert.match(source, /^  a2-2-container-probe:$/m);
+  assert.match(source, /^    if: github\.event_name == 'pull_request' && github\.event\.pull_request\.head\.repo\.full_name == github\.repository$/m);
+  assert.match(source, /^    permissions:\s*\n      contents: read$/m);
+  assert.match(source, /sandbox_smoke\.py --run-docker/);
   assert.doesNotMatch(source, /\$\{\{\s*secrets\.|pull_request_target|supabase\s+db\s+push|supabase\s+functions\s+deploy|service.role.key/i);
   assert.doesNotMatch(source, /^\s*(?:contents|actions|id-token|deployments|packages|security-events): write\s*$/m);
 });

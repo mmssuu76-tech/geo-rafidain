@@ -411,30 +411,23 @@
   };
 
   const deleteRequest = async id => {
-    const profile = await getProfile();
-    if (profile?.role !== 'admin') throw new Error('ADMIN_REQUIRED');
-
-    const { data: request, error } = await client.from('service_requests')
-      .select('id,user_id,request_files(object_path),request_deliverables(object_path)')
-      .eq('id', id).single();
-    if (error) throw error;
-    const { validRequestPaths } = await import('./supabase/functions/_shared/request-paths.mjs');
-    if (!validRequestPaths(request)) throw new Error('INVALID_STORAGE_METADATA');
-
-    const removeStorageObjects = async (bucket, rows) => {
-      const paths = (rows || []).map(item => item.object_path).filter(Boolean);
-      if (!paths.length) return;
-      const { error } = await client.storage.from(bucket).remove(paths);
+    let lastBatch;
+    while (true) {
+      const { data, error } = await client.rpc('admin_delete_request_step', { p_id: id });
       if (error) throw error;
-    };
-
-    // Remove physical objects before deleting the parent record.
-    // If a storage operation fails, keep the database row so cleanup can be retried.
-    await removeStorageObjects('request-deliverables', request.request_deliverables);
-    await removeStorageObjects('request-files', request.request_files);
-
-    const { error: deleteError } = await client.from('service_requests').delete().eq('id', id);
-    if (deleteError) throw deleteError;
+      if (data?.done === true) return;
+      const batch = data?.objects;
+      if (!Array.isArray(batch) || !batch.length) throw new Error('INVALID_DELETE_BATCH');
+      const marker = JSON.stringify(batch);
+      if (marker === lastBatch) throw new Error('DELETE_NOT_CONFIRMED');
+      lastBatch = marker;
+      for (const bucket of ['request-files', 'request-deliverables']) {
+        const paths = batch.filter(item => item.bucket_id === bucket).map(item => item.name);
+        if (!paths.length) continue;
+        const removal = await client.storage.from(bucket).remove(paths);
+        if (removal.error) throw removal.error;
+      }
+    }
   };
 
   const createFileLink = async objectPath => {

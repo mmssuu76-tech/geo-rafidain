@@ -303,7 +303,7 @@
     if (hasFileWarning) {
       const warning = document.createElement('p');
       warning.className = 'request-success-warning';
-      warning.textContent = `تم حفظ بيانات الطلب، لكن تعذر رفع ${fileFailures.length} من الملفات. يمكنك إعادة رفع الملفات لاحقاً أو إرسال الطلب بدونها للمراجعة الأولية.`;
+      warning.textContent = `تم حفظ بيانات الطلب، لكن تعذر رفع ${fileFailures.length} من الملفات. أبقِ البيانات والملفات كما هي واضغط إرسال مجدداً لاستكمال الطلب نفسه.`;
       content.append(kicker, title, summary, warning);
     } else {
       content.append(kicker, title, summary);
@@ -481,6 +481,7 @@
       }, [...fileInput.files]);
 
       renderRequestSuccess(result, user);
+      if (result.fileFailures?.length) return;
       form.reset();
       charCount.textContent = '0';
       fileLabel.textContent = 'حتى 5 ملفات، 10MB لكل ملف';

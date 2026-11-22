@@ -102,63 +102,78 @@
     });
   };
 
-  const uploadRequestFiles = async (user, request, files) => {
-    validateFiles(files);
-    const failures = [];
+  const digest = async bytes => {
+    const hash = await crypto.subtle.digest('SHA-256', bytes);
+    return Array.from(new Uint8Array(hash), byte => byte.toString(16).padStart(2, '0')).join('');
+  };
 
-    for (const file of files) {
-      const extension = file.name.split('.').pop()?.toLowerCase() || '';
-      const safeMimeType = allowedFileTypes[extension];
-      const objectPath = `${user.id}/${request.id}/${crypto.randomUUID()}.${extension}`;
-      const { error: uploadError } = await client.storage
-        .from('request-files')
-        .upload(objectPath, file, { cacheControl: '3600', upsert: false, contentType: safeMimeType });
-
-      if (uploadError) {
-        failures.push({ name: file.name, reason: uploadError.message });
-        continue;
-      }
-
-      const { error: metadataError } = await client.from('request_files').insert({
-        request_id: request.id,
-        owner_id: user.id,
-        object_path: objectPath,
-        original_name: file.name,
-        size_bytes: file.size,
-        mime_type: safeMimeType
-      });
-
-      if (metadataError) {
-        await client.storage.from('request-files').remove([objectPath]);
-        failures.push({ name: file.name, reason: metadataError.message });
-      }
+  // Persist only opaque identifiers, scoped to this tab and authenticated actor.
+  const beginOperation = async (actor, intent) => {
+    const key = 'gr-retry:' + actor + ':' + await digest(new TextEncoder().encode(JSON.stringify(intent)));
+    let id = sessionStorage.getItem(key);
+    if (!id) {
+      id = crypto.randomUUID();
+      sessionStorage.setItem(key, id);
     }
+    return { key, id };
+  };
 
-    return failures;
+  const findSaved = async (table, column, value, fields) => {
+    const { data, error } = await client.from(table).select(fields).eq(column, value).maybeSingle();
+    if (error) throw error;
+    return data;
+  };
+
+  const saveFile = async (bucket, path, file, mime, hash, register) => {
+    const table = bucket === 'request-files' ? 'request_files' : 'request_deliverables';
+    const lookup = () => findSaved(table, 'object_path', path, '*');
+    const existing = await lookup();
+    if (existing) return existing;
+    const storage = client.storage.from(bucket);
+    const { error } = await storage.upload(path, file, { cacheControl: '3600', upsert: false, contentType: mime });
+    if (error) {
+      const remote = await storage.download(path);
+      if (remote.error || await digest(await remote.data.arrayBuffer()) !== hash) throw error;
+    }
+    const result = await register();
+    if (result.error) {
+      const saved = await lookup();
+      if (saved) return saved;
+      throw result.error;
+    }
+    return Array.isArray(result.data) ? result.data[0] : result.data;
   };
 
   const createRequest = async (values, files = []) => {
     const user = await requireUser();
-    const requestId = crypto.randomUUID();
     validateFiles(files);
-
-    const { data: request, error } = await client
-      .from('service_requests')
-      .insert({
-        id: requestId,
-        user_id: user.id,
-        name: values.name,
-        contact: values.contact,
-        service: values.service,
-        study_area: values.studyArea || null,
-        description: values.description,
-        deadline: values.deadline || null
-      })
-      .select('id,request_number,status,created_at')
-      .single();
-
-    if (error) throw error;
-    const fileFailures = await uploadRequestFiles(user, request, files);
+    const hashes = await Promise.all(files.map(async file => digest(await file.arrayBuffer())));
+    const row = {
+      user_id: user.id, name: values.name, contact: values.contact, service: values.service,
+      study_area: values.studyArea || null, description: values.description, deadline: values.deadline || null
+    };
+    const op = await beginOperation(user.id, ['request', row, files.map((f, i) => [f.name, hashes[i]])]);
+    const fields = 'id,request_number,status,created_at';
+    const lookup = () => findSaved('service_requests', 'id', op.id, fields);
+    let request = await lookup();
+    if (!request) {
+      const result = await client.from('service_requests').insert({ ...row, id: op.id }).select(fields).single();
+      request = result.data || await lookup();
+      if (!request) throw result.error || new Error('REQUEST_NOT_CONFIRMED');
+    }
+    const fileFailures = [];
+    for (const [i, file] of files.entries()) {
+      const ext = file.name.split('.').pop().toLowerCase();
+      const path = `${user.id}/${request.id}/${i}-${hashes[i]}.${ext}`;
+      try {
+        await saveFile('request-files', path, file, allowedFileTypes[ext], hashes[i], () =>
+          client.from('request_files').insert({ request_id: request.id, owner_id: user.id, object_path: path,
+            original_name: file.name, size_bytes: file.size, mime_type: allowedFileTypes[ext] }));
+      } catch (error) {
+        fileFailures.push({ name: file.name, reason: error.message });
+      }
+    }
+    if (!fileFailures.length) sessionStorage.removeItem(op.key);
     return { request, fileFailures };
   };
 
@@ -383,27 +398,16 @@
     if (versionLabel.length < 2 || versionLabel.length > 80) throw new Error('INVALID_VERSION_LABEL');
     if (deliveryNote && deliveryNote.length > 1200) throw new Error('DELIVERY_NOTE_TOO_LONG');
 
-    const objectPath = `${request.user_id}/${request.id}/${crypto.randomUUID()}.${extension}`;
-    const { error: uploadError } = await client.storage
-      .from('request-deliverables')
-      .upload(objectPath, file, { cacheControl: '3600', upsert: false, contentType: mimeType });
-    if (uploadError) throw uploadError;
-
-    const { data, error } = await client.rpc('admin_register_request_deliverable', {
-      p_request_id: request.id,
-      p_object_path: objectPath,
-      p_original_name: file.name,
-      p_size_bytes: file.size,
-      p_mime_type: mimeType,
-      p_version_label: versionLabel,
-      p_delivery_note: deliveryNote
-    });
-
-    if (error) {
-      await client.storage.from('request-deliverables').remove([objectPath]);
-      throw error;
-    }
-    return Array.isArray(data) ? data[0] : data;
+    const hash = await digest(await file.arrayBuffer());
+    const op = await beginOperation(profile.id, ['delivery', request.id, file.name, hash, versionLabel, deliveryNote]);
+    const path = `${request.user_id}/${request.id}/${op.id}.${extension}`;
+    const delivery = await saveFile('request-deliverables', path, file, mimeType, hash, () =>
+      client.rpc('admin_register_request_deliverable', {
+        p_request_id: request.id, p_object_path: path, p_original_name: file.name,
+        p_size_bytes: file.size, p_mime_type: mimeType, p_version_label: versionLabel, p_delivery_note: deliveryNote
+      }));
+    sessionStorage.removeItem(op.key);
+    return delivery;
   };
 
   const deleteRequest = async id => {

@@ -938,15 +938,20 @@
   document.querySelector('#delete-request').addEventListener('click', async () => {
     if (profile?.role !== 'admin' || !selectedId) return;
     if (!window.confirm('سيُحذف الطلب وملفاته نهائياً. هل أنت متأكد؟')) return;
+    const id = selectedId;
+    const button = document.querySelector('#delete-request');
+    button.disabled = true;
     try {
-      await backend.deleteRequest(selectedId);
-      requests = requests.filter(item => item.id !== selectedId);
+      await backend.deleteRequest(id);
+      requests = requests.filter(item => item.id !== id);
       dialog.close();
       clearPanelError();
       render();
       showNotice('تم حذف الطلب وملفاته.');
     } catch {
-      showPanelError('تعذر حذف الطلب. لم يُجرَ أي حذف إضافي.');
+      showPanelError('تعذر تأكيد اكتمال الحذف. حدّث القائمة ثم أعد حذف الطلب لاستكمال الملفات المتبقية.');
+    } finally {
+      button.disabled = false;
     }
   });
 

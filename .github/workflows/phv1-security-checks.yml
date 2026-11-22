@@ -8,6 +8,7 @@ on:
       - agents/review-isolation-a1
       - agents/secure-runtime-policy-a2-1
       - agents/secure-sandbox-a2-2
+      - agents/trusted-approval-gateway-a2-3
   push:
     branches:
       - 'hardening/**'
@@ -91,6 +92,9 @@ jobs:
 
       - name: Run A2.3 offline gateway preview tests
         run: python3 -m unittest discover -s tests -p test_agent_a2_3_gateway_preview.py -v
+
+      - name: Run A2.3-P1A trusted identity contract tests (offline)
+        run: python3 -m unittest discover -s tests -p test_agent_a2_3_p1_identity_contract.py -v
 
   a2-2-container-probe:
     # Docker engine is a privileged trusted CI service: never invoke this job

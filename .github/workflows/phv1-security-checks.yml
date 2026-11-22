@@ -69,3 +69,6 @@ jobs:
 
       - name: Run retention preview Python unit tests (offline)
         run: python3 -m unittest discover -s tests -p test_retention_preview.py -v
+
+      - name: Run read-only development agent policy tests (offline)
+        run: python3 -m unittest discover -s tests -p test_agent_workspace.py -v

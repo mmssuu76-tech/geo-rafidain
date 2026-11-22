@@ -1,0 +1,2 @@
+# Optional for model-assisted review. Offline checks use the Python standard library.
+openai-agents==0.25.0

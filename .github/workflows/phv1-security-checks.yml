@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - agents/dev-review-readonly-v1
+      - agents/review-isolation-a1
   push:
     branches:
       - 'hardening/**'
@@ -76,3 +77,6 @@ jobs:
 
       - name: Run A1 reviewed-snapshot and access-gate tests (offline)
         run: python3 -m unittest discover -s tests -p test_agent_review_snapshot.py -v
+
+      - name: Run A2.1 offline runtime policy preflight tests
+        run: python3 -m unittest discover -s tests -p test_agent_runtime_policy.py -v

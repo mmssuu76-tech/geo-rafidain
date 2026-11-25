@@ -44,6 +44,17 @@ async function fixture() {
         throw new Error(`SEC-012 local bootstrap/${name}: ${error.message}`);
       }
     }
+    // The bootstrap already contains the initial MFA and attachment constraints.
+    // Apply subsequent revisions only inside this disposable database.
+    for (const migration of [
+      '20261120140210_validate_request_attachment_paths',
+      '20261120234235_phv1_retention_atomic_claim',
+      '20261121203845_phv1_notification_mfa',
+      '20261121203937_phv1_attachment_path_hardening',
+      '20261122140914_resumable_admin_delete',
+    ]) {
+      await db.exec(await readFile(new URL(`../ops/applied-migrations/${migration}.sql`, import.meta.url), 'utf8'));
+    }
     // The production Storage API enforces additional object privileges and blob rules.
     // Only the SQL row policies are exercised here.
     await db.exec('grant select, insert, delete on storage.objects to authenticated');
@@ -193,5 +204,46 @@ test('SEC-012: distinct clients and MFA-gated admin complete a protected service
     await assert.rejects(register(rb, `${clientB}/${rb}/result.zip`), hasCode('42501'));
   } finally {
     await db.close();
+  }
+});
+
+test('restored database preserves request ownership, both storage policies and admin MFA', { timeout: 45000 }, async () => {
+  const source = await fixture();
+  let snapshot, requestId;
+  try {
+    requestId = await newRequest(source, clientA);
+    await source.exec('reset role');
+    for (const bucket of ['request-files', 'request-deliverables']) {
+      await source.query('insert into storage.objects values (gen_random_uuid(), $1, $2)',
+        [bucket, `${clientA}/${requestId}/sample.geojson`]);
+    }
+    snapshot = await source.dumpDataDir();
+  } finally {
+    await source.close();
+  }
+
+  const restored = new PGlite({ loadDataDir: snapshot });
+  const row = () => all(restored, 'select id from public.service_requests');
+  const objects = () => all(restored, 'select bucket_id, name from storage.objects order by bucket_id');
+  const claim = () => restored.query('select public.admin_delete_request_step($1) as step', [requestId]);
+  try {
+    for (const [user, level] of [[clientB, 'aal1'], [administrator, 'aal1']]) {
+      await identity(restored, user, level);
+      assert.deepEqual(await row(), []);
+      assert.deepEqual(await objects(), []);
+      await assert.rejects(claim(), hasCode('42501'));
+    }
+    await identity(restored, clientA);
+    assert.deepEqual(await row(), [{ id: requestId }]);
+    const expected = ['request-deliverables', 'request-files'].map(bucket_id => ({
+      bucket_id, name: `${clientA}/${requestId}/sample.geojson`,
+    }));
+    assert.deepEqual(await objects(), expected);
+    await assert.rejects(claim(), hasCode('42501'));
+    await identity(restored, administrator, 'aal2');
+    assert.deepEqual((await claim()).rows[0].step, { done: false, objects: expected });
+    assert.deepEqual(await row(), [{ id: requestId }]);
+  } finally {
+    await restored.close();
   }
 });
